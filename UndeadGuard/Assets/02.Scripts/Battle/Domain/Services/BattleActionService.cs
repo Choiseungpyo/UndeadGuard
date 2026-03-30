@@ -3,22 +3,24 @@ using System.Collections.Generic;
 
 /// <summary>
 /// 전투에서 실제 행동 실행을 담당하는 서비스.
-/// 이동, 기본 공격, 핵 공격, 부활, 대기 같은 전투 규칙을 처리한다.
+/// 이동, 기본 공격, 코어 및 구조물 공격, 부활, 대기 같은 전투 규칙을 처리한다.
 /// </summary>
 public sealed class BattleActionService
 {
-    private readonly TurnSystem turnSystem;
+    private readonly TurnManager turnManager;
 
     public event Action<int, IReadOnlyList<GridPosition>> UnitMoved;
     public event Action<int, int, int> UnitAttackedUnit;
+    public event Action<int, StructureType, GridPosition, int> UnitAttackedStructure;
     public event Action<int, int> UnitAttackedCore;
+    public event Action<StructureType, GridPosition> StructureDestroyed;
     public event Action<int> UnitDied;
     public event Action<int, GridPosition> UnitResurrected;
     public event Action<int> UnitWaited;
 
-    public BattleActionService(TurnSystem turnSystem)
+    public BattleActionService(TurnManager turnManager)
     {
-        this.turnSystem = turnSystem;
+        this.turnManager = turnManager;
     }
 
     public bool TryMove(
@@ -33,7 +35,7 @@ public sealed class BattleActionService
             return false;
         }
 
-        if (unit.Team != turnSystem.CurrentTurn)
+        if (unit.Team != turnManager.CurrentTurn)
         {
             return false;
         }
@@ -59,6 +61,11 @@ public sealed class BattleActionService
         }
 
         if (!state.Grid.IsInside(targetPosition))
+        {
+            return false;
+        }
+
+        if (state.HasBlockingStructureAtPosition(targetPosition))
         {
             return false;
         }
@@ -96,7 +103,7 @@ public sealed class BattleActionService
             return false;
         }
 
-        if (attacker.Team != turnSystem.CurrentTurn)
+        if (attacker.Team != turnManager.CurrentTurn)
         {
             return false;
         }
@@ -148,14 +155,14 @@ public sealed class BattleActionService
         return true;
     }
 
-    public bool TryAttackCore(BattleState state, int attackerId)
+    public bool TryAttackStructure(BattleState state, int attackerId, GridPosition targetPosition)
     {
         if (!state.TryGetUnit(attackerId, out BattleUnit attacker))
         {
             return false;
         }
 
-        if (attacker.Team != turnSystem.CurrentTurn)
+        if (attacker.Team != turnManager.CurrentTurn)
         {
             return false;
         }
@@ -165,13 +172,23 @@ public sealed class BattleActionService
             return false;
         }
 
-        int distance = attacker.Position.ManhattanDistance(state.Core.Position);
+        if (!state.TryGetStructureAtPosition(targetPosition, out BattleStructure structure))
+        {
+            return false;
+        }
+
+        if (structure.IsDestroyed)
+        {
+            return false;
+        }
+
+        int distance = attacker.Position.ManhattanDistance(targetPosition);
         if (distance > attacker.AttackRange)
         {
             return false;
         }
 
-        attacker.FaceTo(state.Core.Position);
+        attacker.FaceTo(targetPosition);
 
         int damage = attacker.PhysicalAttack;
         if (damage < 1)
@@ -179,11 +196,32 @@ public sealed class BattleActionService
             damage = 1;
         }
 
-        state.Core.TakeDamage(damage);
+        structure.TakeDamage(damage);
         attacker.MarkActed(UnitActionType.BasicAttack);
 
-        UnitAttackedCore?.Invoke(attackerId, damage);
+        UnitAttackedStructure?.Invoke(attackerId, structure.StructureType, targetPosition, damage);
+
+        if (structure.StructureType == StructureType.Core)
+        {
+            UnitAttackedCore?.Invoke(attackerId, damage);
+        }
+
+        if (structure.IsDestroyed)
+        {
+            StructureDestroyed?.Invoke(structure.StructureType, targetPosition);
+        }
+
         return true;
+    }
+
+    public bool TryAttackCore(BattleState state, int attackerId)
+    {
+        if (state.Core == null)
+        {
+            return false;
+        }
+
+        return TryAttackStructure(state, attackerId, state.Core.Position);
     }
 
     public bool TryWait(BattleState state, int unitId)
@@ -193,7 +231,7 @@ public sealed class BattleActionService
             return false;
         }
 
-        if (unit.Team != turnSystem.CurrentTurn)
+        if (unit.Team != turnManager.CurrentTurn)
         {
             return false;
         }
@@ -210,7 +248,12 @@ public sealed class BattleActionService
 
     public bool TryResurrect(BattleState state, int deadUnitId, GridPosition targetPosition)
     {
-        if (turnSystem.CurrentTurn != TeamType.Player)
+        if (turnManager.CurrentTurn != TeamType.Player)
+        {
+            return false;
+        }
+
+        if (!state.HasActiveRevivalAltar())
         {
             return false;
         }
@@ -239,7 +282,7 @@ public sealed class BattleActionService
 
     public bool TryGrantExtraAction(BattleState state, int unitId, int darkEnergyCost)
     {
-        if (turnSystem.CurrentTurn != TeamType.Player)
+        if (turnManager.CurrentTurn != TeamType.Player)
         {
             return false;
         }

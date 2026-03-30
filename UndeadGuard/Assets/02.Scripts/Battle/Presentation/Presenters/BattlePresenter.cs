@@ -1,10 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// 전투 로직 이벤트를 받아 화면 요소를 갱신하는 프레젠터.
-/// 유닛 선택, 이동 가능 칸, 경로 표시, 실제 액터 이동을 뷰 계층에 반영한다.
-/// </summary>
 public sealed class BattlePresenter : MonoBehaviour
 {
     [SerializeField] private GridView gridView;
@@ -12,10 +8,13 @@ public sealed class BattlePresenter : MonoBehaviour
 
     private readonly Dictionary<int, UnitActor> actorByUnitId = new Dictionary<int, UnitActor>();
 
-    private BattleController controller;
+    private PlayerCommandController controller;
+    private IMoveCompletionReceiver moveCompletionReceiver;
     private UnitActor currentSelectedActor;
 
-    public void Initialize(BattleController controller, List<UnitActor> actors)
+    public void Initialize(
+        PlayerCommandController controller,
+        List<UnitActor> actors)
     {
         this.controller = controller;
 
@@ -40,6 +39,11 @@ public sealed class BattlePresenter : MonoBehaviour
         controller.MoveRangeChanged += HandleMoveRangeChanged;
         controller.PathPreviewChanged += HandlePathPreviewChanged;
         controller.UnitMoveRequested += HandleUnitMoveRequested;
+    }
+
+    public void SetMoveCompletionReceiver(IMoveCompletionReceiver receiver)
+    {
+        moveCompletionReceiver = receiver;
     }
 
     private void OnDestroy()
@@ -118,11 +122,6 @@ public sealed class BattlePresenter : MonoBehaviour
 
     private void HandleActorMoveFinished(int unitId)
     {
-        if (controller == null)
-        {
-            return;
-        }
-
-        controller.NotifyUnitMoveFinished(unitId);
+        moveCompletionReceiver?.NotifyMoveFinished(unitId);
     }
 }

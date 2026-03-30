@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// 플레이어 입력을 읽어 BattleController에 전달하는 입력 처리 클래스.
+/// 플레이어 입력을 읽어 PlayerCommandController에 전달하는 입력 처리 클래스.
 /// 유닛 클릭과 바닥 클릭을 구분하여 선택과 이동 요청으로 변환한다.
 /// </summary>
 public sealed class BattleInputController : MonoBehaviour
@@ -12,18 +12,29 @@ public sealed class BattleInputController : MonoBehaviour
     [SerializeField] private LayerMask groundLayerMask;
     [SerializeField] private GridCoordinateMapper coordinateMapper;
 
-    private BattleController controller;
+    private PlayerCommandController controller;
     private GridPosition lastHoverPosition;
     private bool hasLastHoverPosition;
+    private bool isInputEnabled = true;
 
-    public void Initialize(BattleController controller)
+    public void Initialize(PlayerCommandController controller)
     {
         this.controller = controller;
     }
 
+    public void SetInputEnabled(bool enabled)
+    {
+        isInputEnabled = enabled;
+
+        if (!enabled)
+        {
+            hasLastHoverPosition = false;
+        }
+    }
+
     private void Update()
     {
-        if (controller == null)
+        if (controller == null || !isInputEnabled)
         {
             return;
         }

@@ -11,7 +11,6 @@ public sealed class BattleGrid
 
     public int Width { get; }
     public int Height { get; }
-
     public BattleGrid(int width, int height)
     {
         Width = width;
@@ -23,7 +22,20 @@ public sealed class BattleGrid
             for (int z = 0; z < height; z++)
             {
                 GridPosition position = new GridPosition(x, z);
-                cells[x, z] = new CellData(position, TileType.Ground, CellObjectType.None);
+                cells[x, z] = new CellData(position, StructureType.None);
+            }
+        }
+    }
+
+    public BattleGrid(MapDefinition mapDefinition) : this(mapDefinition.Width, mapDefinition.Height)
+    {
+        for (int x = 0; x < Width; x++)
+        {
+            for (int z = 0; z < Height; z++)
+            {
+                MapCellData mapCell = mapDefinition.GetCell(x, z);
+                GridPosition position = new GridPosition(x, z);
+                cells[x, z] = new CellData(position, mapCell.objectType);
             }
         }
     }
@@ -46,13 +58,8 @@ public sealed class BattleGrid
         return cells[position.x, position.z];
     }
 
-    public void SetTileType(GridPosition position, TileType tileType)
-    {
-        CellData cell = GetCell(position);
-        cell.SetTileType(tileType);
-    }
 
-    public void SetObjectType(GridPosition position, CellObjectType objectType)
+    public void SetObjectType(GridPosition position, StructureType objectType)
     {
         CellData cell = GetCell(position);
         cell.SetObjectType(objectType);

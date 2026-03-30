@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 002c0ebf97ac5c54193a68239cfe09e8, type: 3}
+  m_Name: MapVisualSet
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::MapVisualSet
+  groundPrefab: {fileID: 7152531031021148702, guid: 04e48510e56f41b45998790e4c57505e, type: 3}
+  wallPrefab: {fileID: 968705918940530338, guid: d5869c8be5e529248bf363f6f4ee3717, type: 3}
+  corePrefab: {fileID: 5608047930108429012, guid: f76c7f5d907011b4b8bbe99286564f68, type: 3}
+  noneIcon: {fileID: 0}
+  wallIcon: {fileID: 0}
+  coreIcon: {fileID: 0}

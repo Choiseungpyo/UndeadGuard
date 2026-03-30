@@ -1,51 +1,81 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// 전투 시작 시 필요한 객체와 데이터를 초기화하고 연결하는 진입점 클래스.
-/// 그리드, 전투 상태, 서비스, 컨트롤러, 프레젠터를 생성하고 씬과 연결한다.
-/// </summary>
 public sealed class BattleBootstrap : MonoBehaviour
 {
-    [SerializeField] private int width = 10;
-    [SerializeField] private int height = 10;
-
-    [SerializeField] private Vector2Int corePosition = new Vector2Int(5, 5);
-    [SerializeField] private int coreMaxHp = 20;
-    [SerializeField] private int startDarkEnergy = 5;
-
     [SerializeField] private GridCoordinateMapper coordinateMapper;
     [SerializeField] private BattlePresenter presenter;
     [SerializeField] private BattleInputController inputController;
+    [SerializeField] private BattleTurnFlow battleTurnFlow;
 
     [SerializeField] private List<UnitSpawnEntry> unitSpawns = new List<UnitSpawnEntry>();
 
-    private BattleController controller;
+    [SerializeField] private MapDefinition mapDefinition;
+    [SerializeField] private PlayerResourceSettings playerResourceSettings;
+
+    [SerializeField] private StructureDefinition coreStructureDefinition;
+    [SerializeField] private StructureDefinition wallStructureDefinition;
+    [SerializeField] private StructureDefinition revivalAltarStructureDefinition;
+
+    private PlayerCommandController playerCommandController;
+    private EnemyTurnController enemyTurnController;
 
     private void Awake()
     {
-        BattleGrid grid = new BattleGrid(width, height);
+        if (mapDefinition == null)
+        {
+            Debug.LogError("MapDefinition이 비어 있습니다.");
+            enabled = false;
+            return;
+        }
 
+        if (playerResourceSettings == null)
+        {
+            Debug.LogError("PlayerResourceSettings가 비어 있습니다.");
+            enabled = false;
+            return;
+        }
+
+        if (coreStructureDefinition == null)
+        {
+            Debug.LogError("coreStructureDefinition이 비어 있습니다.");
+            enabled = false;
+            return;
+        }
+
+        if (!mapDefinition.TryGetCorePosition(out Vector2Int corePosition))
+        {
+            Debug.LogError("맵에 Core가 배치되어 있지 않습니다.");
+            enabled = false;
+            return;
+        }
+
+        BattleGrid grid = new BattleGrid(mapDefinition);
         GridPosition coreGridPosition = new GridPosition(corePosition.x, corePosition.y);
-        grid.SetObjectType(coreGridPosition, CellObjectType.DefensePoint);
 
-        BattleCore core = new BattleCore(coreGridPosition, coreMaxHp);
-        PlayerResourceState playerResources = new PlayerResourceState(startDarkEnergy);
+        BattleStructure core = new BattleStructure(coreStructureDefinition, coreGridPosition);
+        PlayerResourceState playerResources = new PlayerResourceState(playerResourceSettings.StartDarkEnergy);
         BattleState state = new BattleState(grid, core, playerResources);
 
-        TurnSystem turnSystem = new TurnSystem();
-        GridRangeService rangeService = new GridRangeService();
-        BattleActionService actionService = new BattleActionService(turnSystem);
-        BattleCommandExecutor commandExecutor = new BattleCommandExecutor();
-        PathFinder pathFinder = new PathFinder();
+        AddStructuresFromMap(state);
 
-        controller = new BattleController(
+        TurnManager turnManager = new TurnManager();
+        GridSearchService gridSearchService = new GridSearchService();
+        BattleActionService actionService = new BattleActionService(turnManager);
+        BattleCommandExecutor commandExecutor = new BattleCommandExecutor();
+
+        EnemyDecisionService enemyDecisionService = new EnemyDecisionService(state, gridSearchService);
+        enemyTurnController = new EnemyTurnController(
             state,
-            rangeService,
+            enemyDecisionService,
             actionService,
-            turnSystem,
-            commandExecutor,
-            pathFinder);
+            commandExecutor);
+
+        playerCommandController = new PlayerCommandController(
+            state,
+            gridSearchService,
+            actionService,
+            commandExecutor);
 
         List<UnitActor> actors = new List<UnitActor>();
 
@@ -81,16 +111,53 @@ public sealed class BattleBootstrap : MonoBehaviour
             }
         }
 
-        presenter.Initialize(controller, actors);
-        inputController.Initialize(controller);
-        controller.StartBattle();
+        presenter.Initialize(playerCommandController, actors);
+        inputController.Initialize(playerCommandController);
+
+        if (battleTurnFlow == null)
+        {
+            Debug.LogError("BattleTurnFlow가 비어 있습니다.");
+            enabled = false;
+            return;
+        }
+
+        battleTurnFlow.Initialize(
+            state,
+            turnManager,
+            playerCommandController,
+            inputController,
+            commandExecutor,
+            enemyTurnController,
+            presenter);
+
+        battleTurnFlow.StartBattle();
+    }
+
+    private void AddStructuresFromMap(BattleState state)
+    {
+        for (int i = 0; i < mapDefinition.Cells.Count; i++)
+        {
+            MapCellData cell = mapDefinition.Cells[i];
+            GridPosition position = new GridPosition(cell.position.x, cell.position.y);
+
+            switch (cell.objectType)
+            {
+                case StructureType.Wall:
+                    state.AddStructure(new BattleStructure(wallStructureDefinition, position));
+                    break;
+
+                case StructureType.RevivalAltar:
+                    state.AddStructure(new BattleStructure(revivalAltarStructureDefinition, position));
+                    break;
+            }
+        }
     }
 
     private void OnDestroy()
     {
-        if (controller != null)
+        if (playerCommandController != null)
         {
-            controller.Dispose();
+            playerCommandController.Dispose();
         }
     }
 }

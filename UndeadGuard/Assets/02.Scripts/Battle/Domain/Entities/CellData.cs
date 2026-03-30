@@ -1,50 +1,28 @@
 /// <summary>
 /// 그리드 한 칸의 현재 상태를 저장하는 클래스.
-/// 바닥 타입, 고정 오브젝트, 점유 중인 유닛 정보를 관리한다.
+/// 셀 자체의 정보와 점유 중인 유닛 정보를 관리한다.
+/// 구조물의 길막 여부는 BattleState의 구조물 상태에서 판단한다.
 /// </summary>
 public sealed class CellData
 {
     public GridPosition Position { get; }
 
-    public TileType TileType { get; private set; }
-    public CellObjectType ObjectType { get; private set; }
+    public StructureType ObjectType { get; private set; }
 
     public int OccupantUnitId { get; private set; }
 
     public bool IsOccupied => OccupantUnitId >= 0;
 
-    public bool IsWalkable
-    {
-        get
-        {
-            if (TileType == TileType.Wall)
-            {
-                return false;
-            }
+    public bool IsWalkable => true;
 
-            if (ObjectType == CellObjectType.DefensePoint)
-            {
-                return false;
-            }
-
-            return true;
-        }
-    }
-
-    public CellData(GridPosition position, TileType tileType, CellObjectType objectType = CellObjectType.None)
+    public CellData(GridPosition position, StructureType objectType = StructureType.None)
     {
         Position = position;
-        TileType = tileType;
         ObjectType = objectType;
         OccupantUnitId = -1;
     }
 
-    public void SetTileType(TileType tileType)
-    {
-        TileType = tileType;
-    }
-
-    public void SetObjectType(CellObjectType objectType)
+    public void SetObjectType(StructureType objectType)
     {
         ObjectType = objectType;
     }

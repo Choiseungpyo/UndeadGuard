@@ -2,22 +2,42 @@ using System.Collections.Generic;
 
 /// <summary>
 /// 현재 전투 전체 상태를 관리하는 중심 클래스.
-/// 살아있는 유닛, 소멸한 유닛, 핵, 플레이어 자원을 함께 보관한다.
+/// 살아있는 유닛, 소멸한 유닛, 코어, 구조물, 플레이어 자원을 함께 보관한다.
 /// </summary>
 public sealed class BattleState
 {
     private readonly Dictionary<int, BattleUnit> aliveUnits = new Dictionary<int, BattleUnit>();
     private readonly Dictionary<int, DeadUnitRecord> deadUnits = new Dictionary<int, DeadUnitRecord>();
+    private readonly List<BattleStructure> structures = new List<BattleStructure>();
 
     public BattleGrid Grid { get; }
-    public BattleCore Core { get; }
+    public BattleStructure Core { get; }
+    public IReadOnlyList<BattleStructure> Structures => structures;
     public PlayerResourceState PlayerResources { get; }
 
-    public BattleState(BattleGrid grid, BattleCore core, PlayerResourceState playerResources)
+    public BattleState(BattleGrid grid, BattleStructure core, PlayerResourceState playerResources)
     {
         Grid = grid;
         Core = core;
         PlayerResources = playerResources;
+
+        if (core != null)
+        {
+            structures.Add(core);
+        }
+    }
+
+    public void AddStructure(BattleStructure structure)
+    {
+        if (structure == null)
+        {
+            return;
+        }
+
+        if (!structures.Contains(structure))
+        {
+            structures.Add(structure);
+        }
     }
 
     public IEnumerable<BattleUnit> GetAliveUnits()
@@ -49,12 +69,22 @@ public sealed class BattleState
 
     public bool TryAddUnit(BattleUnit unit)
     {
+        if (unit == null)
+        {
+            return false;
+        }
+
         if (aliveUnits.ContainsKey(unit.Id))
         {
             return false;
         }
 
         if (!Grid.IsInside(unit.Position))
+        {
+            return false;
+        }
+
+        if (HasBlockingStructureAtPosition(unit.Position))
         {
             return false;
         }
@@ -102,7 +132,54 @@ public sealed class BattleState
 
     public bool IsCoreAtPosition(GridPosition position)
     {
-        return Core.Position == position;
+        return Core != null && Core.Position == position;
+    }
+
+    public bool TryGetStructureAtPosition(GridPosition position, out BattleStructure structure)
+    {
+        structure = null;
+
+        for (int i = 0; i < structures.Count; i++)
+        {
+            if (structures[i].Position == position)
+            {
+                structure = structures[i];
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public bool HasBlockingStructureAtPosition(GridPosition position)
+    {
+        for (int i = 0; i < structures.Count; i++)
+        {
+            BattleStructure structure = structures[i];
+
+            if (structure.Position == position && structure.IsBlockingActive)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public bool HasActiveRevivalAltar()
+    {
+        for (int i = 0; i < structures.Count; i++)
+        {
+            BattleStructure structure = structures[i];
+
+            if (structure.StructureType == StructureType.RevivalAltar &&
+                structure.IsResurrectionActive)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public bool TryKillUnit(int unitId, int resurrectCost)
@@ -139,6 +216,11 @@ public sealed class BattleState
         }
 
         if (!Grid.IsInside(targetPosition))
+        {
+            return false;
+        }
+
+        if (HasBlockingStructureAtPosition(targetPosition))
         {
             return false;
         }
