@@ -45,10 +45,13 @@ public static class MapSceneBuilder
 
     public static void Clear()
     {
+        // 선택 중인 오브젝트를 먼저 해제해 GameObjectInspector 오류를 방지한다
+        Selection.activeGameObject = null;
+
         GameObject root = GameObject.Find(RootName);
         if (root != null)
         {
-            Object.DestroyImmediate(root);
+            Undo.DestroyObjectImmediate(root);
         }
     }
 

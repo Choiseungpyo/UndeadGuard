@@ -18,7 +18,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400084, guid: d959d31e17af27542add3f688e422b5e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2.05
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 400084, guid: d959d31e17af27542add3f688e422b5e, type: 3}
       propertyPath: m_LocalPosition.y
@@ -65,7 +65,10 @@ PrefabInstance:
       addedObject: {fileID: 9104082723384633893}
     - targetCorrespondingSourceObject: {fileID: 100084, guid: d959d31e17af27542add3f688e422b5e, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 3779266602836364905}
+      addedObject: {fileID: 4183998196261289760}
+    - targetCorrespondingSourceObject: {fileID: 100084, guid: d959d31e17af27542add3f688e422b5e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2548662481253442728}
   m_SourcePrefab: {fileID: 100100000, guid: d959d31e17af27542add3f688e422b5e, type: 3}
 --- !u!1 &5330127464484973351 stripped
 GameObject:
@@ -93,7 +96,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1.5, z: 1}
   m_Center: {x: 0, y: 0.8, z: 0}
---- !u!114 &3779266602836364905
+--- !u!114 &4183998196261289760
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -102,10 +105,28 @@ MonoBehaviour:
   m_GameObject: {fileID: 5330127464484973351}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 48ffd8c0f84d4f9488dce567632c2977, type: 3}
+  m_Script: {fileID: 11500000, guid: 59eb46835109acf42b995b83e98683ba, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UnitActor
-  unitId: 0
-  moveSpeed: 4
-  rotateSpeed: 12
-  actorYOffset: 1
+  m_EditorClassIdentifier: Assembly-CSharp::Zombie
+  _unitType: 0
+  _team: 0
+  _stats:
+    _maxHp: 0
+    _physicalAttack: 0
+    _magicAttack: 0
+    _defensePower: 0
+    _attackRange: 0
+    _moveRange: 0
+  _darkEnergyReward: 1
+--- !u!114 &2548662481253442728
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5330127464484973351}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b342150397f987542b9aa33f9b58a997, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyAI

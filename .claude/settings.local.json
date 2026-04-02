@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell -Command \"Get-Content 'c:\\\\Users\\\\OWNER\\\\Documents\\\\GitHub\\\\UndeadGuard\\\\UndeadGuard\\\\Assets\\\\02.Scripts\\\\UI\\\\PhaseHeaderHUD.cs' -Encoding UTF8 | Select-Object -Skip 0 | Out-String\")",
+      "Bash(powershell -File -)",
+      "Bash(powershell -ExecutionPolicy Bypass -File \"c:\\\\Users\\\\OWNER\\\\Documents\\\\GitHub\\\\UndeadGuard\\\\fix_header.ps1\")",
+      "Bash(del \"c:\\\\Users\\\\OWNER\\\\Documents\\\\GitHub\\\\UndeadGuard\\\\fix_header.ps1\")"
+    ]
+  }
+}

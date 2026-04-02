@@ -58,6 +58,22 @@ public sealed class MapDefinition : ScriptableObject
         return result;
     }
 
+    // 특정 스폰 구역에 해당하는 모든 타일 좌표를 반환한다
+    public List<Vector2Int> GetSpawnZonePositions(SpawnZoneType zoneType)
+    {
+        List<Vector2Int> result = new List<Vector2Int>();
+
+        for (int i = 0; i < cells.Count; i++)
+        {
+            if (cells[i].spawnZone == zoneType)
+            {
+                result.Add(cells[i].position);
+            }
+        }
+
+        return result;
+    }
+
 #if UNITY_EDITOR
     public void Resize(int newSize)
     {
@@ -127,6 +143,22 @@ public sealed class MapDefinition : ScriptableObject
         cells[index] = cell;
     }
 
+    // 지정한 칸의 스폰 구역을 설정한다
+    public void PaintSpawnZone(int x, int z, SpawnZoneType zoneType)
+    {
+        EnsureInitialized();
+
+        if (!IsInside(x, z))
+        {
+            return;
+        }
+
+        int index = GetIndex(x, z);
+        MapCellData cell = cells[index];
+        cell.spawnZone = zoneType;
+        cells[index] = cell;
+    }
+
     public void ClearAllObjects()
     {
         EnsureInitialized();
@@ -135,6 +167,19 @@ public sealed class MapDefinition : ScriptableObject
         {
             MapCellData cell = cells[i];
             cell.objectType = StructureType.None;
+            cells[i] = cell;
+        }
+    }
+
+    // 모든 칸의 스폰 구역을 초기화한다
+    public void ClearAllSpawnZones()
+    {
+        EnsureInitialized();
+
+        for (int i = 0; i < cells.Count; i++)
+        {
+            MapCellData cell = cells[i];
+            cell.spawnZone = SpawnZoneType.None;
             cells[i] = cell;
         }
     }
