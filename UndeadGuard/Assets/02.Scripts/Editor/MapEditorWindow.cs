@@ -292,7 +292,11 @@ public sealed class MapEditorWindow : EditorWindow
             if (cell.spawnZone != SpawnZoneType.None)
                 return;
 
-            mapDefinition.PaintObject(x, z, selectedObjectBrush);
+            // 코어는 클릭 칸을 좌하단으로 삼아 2x2 블록으로 배치한다
+            if (selectedObjectBrush == StructureType.Core)
+                mapDefinition.PaintCoreBlock(x, z);
+            else
+                mapDefinition.PaintObject(x, z, selectedObjectBrush);
         }
     }
 

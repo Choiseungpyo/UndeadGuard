@@ -81,7 +81,7 @@ MonoBehaviour:
     objectType: 0
     spawnZone: 0
   - position: {x: 2, y: 2}
-    objectType: 1
+    objectType: 0
     spawnZone: 0
   - position: {x: 3, y: 2}
     objectType: 0
@@ -96,7 +96,7 @@ MonoBehaviour:
     objectType: 0
     spawnZone: 0
   - position: {x: 7, y: 2}
-    objectType: 1
+    objectType: 0
     spawnZone: 0
   - position: {x: 8, y: 2}
     objectType: 0
@@ -147,10 +147,10 @@ MonoBehaviour:
     objectType: 0
     spawnZone: 1
   - position: {x: 4, y: 4}
-    objectType: 0
+    objectType: 2
     spawnZone: 0
   - position: {x: 5, y: 4}
-    objectType: 0
+    objectType: 2
     spawnZone: 0
   - position: {x: 6, y: 4}
     objectType: 0
@@ -177,7 +177,7 @@ MonoBehaviour:
     objectType: 0
     spawnZone: 1
   - position: {x: 4, y: 5}
-    objectType: 0
+    objectType: 2
     spawnZone: 0
   - position: {x: 5, y: 5}
     objectType: 2
@@ -231,7 +231,7 @@ MonoBehaviour:
     objectType: 0
     spawnZone: 0
   - position: {x: 2, y: 7}
-    objectType: 1
+    objectType: 0
     spawnZone: 0
   - position: {x: 3, y: 7}
     objectType: 0
@@ -246,7 +246,7 @@ MonoBehaviour:
     objectType: 0
     spawnZone: 0
   - position: {x: 7, y: 7}
-    objectType: 1
+    objectType: 0
     spawnZone: 0
   - position: {x: 8, y: 7}
     objectType: 0

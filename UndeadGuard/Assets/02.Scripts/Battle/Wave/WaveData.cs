@@ -3,7 +3,7 @@ using UnityEngine;
 
 // 웨이브 하나의 적 스폰 정보를 담는 ScriptableObject
 // 인스펙터에서 각 웨이브의 적 구성과 스폰 위치를 설정한다
-[CreateAssetMenu(fileName = "WaveData", menuName = "Undead Guard/Wave Data")]
+[CreateAssetMenu(fileName = "WaveData", menuName = "Wave/Wave Data")]
 public class WaveData : ScriptableObject
 {
     // 이 웨이브의 번호

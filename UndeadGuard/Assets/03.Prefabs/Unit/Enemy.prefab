@@ -56,6 +56,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 9500000, guid: d959d31e17af27542add3f688e422b5e, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: c386b2f15f6ca854190fbb9fa983c880, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -69,6 +73,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 100084, guid: d959d31e17af27542add3f688e422b5e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2548662481253442728}
+    - targetCorrespondingSourceObject: {fileID: 100084, guid: d959d31e17af27542add3f688e422b5e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4268110230948741834}
   m_SourcePrefab: {fileID: 100100000, guid: d959d31e17af27542add3f688e422b5e, type: 3}
 --- !u!1 &5330127464484973351 stripped
 GameObject:
@@ -108,16 +115,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59eb46835109acf42b995b83e98683ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Zombie
-  _unitType: 0
-  _team: 0
-  _stats:
-    _maxHp: 0
-    _physicalAttack: 0
-    _magicAttack: 0
-    _defensePower: 0
-    _attackRange: 0
-    _moveRange: 0
-  _darkEnergyReward: 1
+  team: 1
+  stats:
+    maxHp: 100
+    physicalAttack: 1
+    magicAttack: 1
+    defensePower: 0
+    attackRange: 1
+    moveRange: 2
+  tileMoveDuration: 1
+  enemyType: 0
+  darkEnergyReward: 1
 --- !u!114 &2548662481253442728
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -130,3 +138,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b342150397f987542b9aa33f9b58a997, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI
+--- !u!114 &4268110230948741834
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5330127464484973351}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8979b2e1cdd07474e8ce52aa3cb82947, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnitAnimator

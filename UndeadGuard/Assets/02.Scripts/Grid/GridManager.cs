@@ -47,18 +47,30 @@ public class GridManager : Singleton<GridManager>
     // 해당 칸에 살아있는 유닛이 있는지 확인한다
     public bool IsOccupied(Vector2Int pos)
     {
-        UnitBase[] units = FindObjectsByType<UnitBase>(FindObjectsSortMode.None);
+        return IsOccupiedIgnoring(pos, null);
+    }
 
-        foreach (UnitBase unit in units)
+    // ignore를 제외하고 해당 칸에 살아있는 유닛이 있는지 확인한다
+    public bool IsOccupiedIgnoring(Vector2Int pos, UnitBase ignore)
+    {
+        foreach (UnitBase unit in UnitRegistry.Instance.GetAllUnits())
         {
-            if (unit == null || unit.IsDead)
-                continue;
-
-            if (unit.GridPosition == pos)
-                return true;
+            if (unit == null || unit.IsDead || unit == ignore) continue;
+            if (unit.GridPosition == pos) return true;
         }
-
         return false;
+    }
+
+    // ignore를 제외하고 이동 가능한 칸인지 확인한다
+    public bool IsWalkableIgnoring(Vector2Int pos, UnitBase ignore)
+    {
+        if (!IsInBounds(pos)) return false;
+
+        var cell = mapDefinition.GetCell(pos.x, pos.y);
+        if (cell.objectType == StructureType.Wall || cell.objectType == StructureType.Core)
+            return false;
+
+        return !IsOccupiedIgnoring(pos, ignore);
     }
 
     public bool IsInBounds(Vector2Int pos)

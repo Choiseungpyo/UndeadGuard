@@ -40,6 +40,9 @@ public static class MapSceneBuilder
             BuildObject(visualSet, objectRoot.transform, cell);
         }
 
+        // 코어는 2x2 블록 중심에 프리팹 1개만 배치한다
+        BuildCore(definition, visualSet, objectRoot.transform);
+
         Selection.activeGameObject = root;
     }
 
@@ -74,9 +77,9 @@ public static class MapSceneBuilder
                 prefab = visualSet.WallPrefab;
                 break;
 
+            // 코어는 BuildCore에서 별도로 처리하므로 여기서는 건너뛴다
             case StructureType.Core:
-                prefab = visualSet.CorePrefab;
-                break;
+                return;
 
             case StructureType.RevivalAltar:
                 prefab = visualSet.RevivalAltarPrefab;
@@ -93,6 +96,21 @@ public static class MapSceneBuilder
             $"{cell.objectType}_{cell.position.x}_{cell.position.y}",
             parent,
             GetCellCenter(cell.position));
+    }
+
+    // 코어 2x2 블록의 중심에 프리팹 1개를 배치한다
+    // 앵커(좌하단) 기준: 중심 = ((anchorX + 1) * TileSpacing, 0, (anchorZ + 1) * TileSpacing)
+    private static void BuildCore(MapDefinition definition, MapVisualSet visualSet, Transform parent)
+    {
+        if (visualSet.CorePrefab == null) return;
+        if (!definition.TryGetCorePosition(out Vector2Int anchor)) return;
+
+        Vector3 coreCenter = new Vector3(
+            (anchor.x + 1) * TileSpacing,
+            0f,
+            (anchor.y + 1) * TileSpacing);
+
+        CreatePlacedInstance(visualSet.CorePrefab, "Core", parent, coreCenter);
     }
 
     private static GameObject CreatePlacedInstance(

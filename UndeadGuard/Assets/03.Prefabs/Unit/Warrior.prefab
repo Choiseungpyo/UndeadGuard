@@ -18,7 +18,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 0e1fa7d79532f8c4fa075ba58ac130ea, type: 2}
     - target: {fileID: 100084, guid: 25d4362529435444382386934e4c5877, type: 3}
       propertyPath: m_Name
-      value: Undead
+      value: Warrior
       objectReference: {fileID: 0}
     - target: {fileID: 100084, guid: 25d4362529435444382386934e4c5877, type: 3}
       propertyPath: m_Layer
@@ -81,6 +81,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 100084, guid: 25d4362529435444382386934e4c5877, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7937544504835334314}
+    - targetCorrespondingSourceObject: {fileID: 100084, guid: 25d4362529435444382386934e4c5877, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -6227015550223834580}
   m_SourcePrefab: {fileID: 100100000, guid: 25d4362529435444382386934e4c5877, type: 3}
 --- !u!1 &90885504196604343 stripped
 GameObject:
@@ -120,15 +123,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 385967e83205c3f409cbebf7c16cd241, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Warrior
-  _unitType: 0
-  _team: 0
-  _stats:
-    _maxHp: 0
-    _physicalAttack: 0
-    _magicAttack: 0
-    _defensePower: 0
-    _attackRange: 0
-    _moveRange: 0
+  team: 0
+  stats:
+    maxHp: 100
+    physicalAttack: 30
+    magicAttack: 10
+    defensePower: 10
+    attackRange: 1
+    moveRange: 4
+  tileMoveDuration: 1
+  undeadType: 1
 --- !u!114 &7937544504835334314
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -141,5 +145,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8378f50cac008484aabe9011b659c75f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SlashSkill
-  _skillName: 
-  _description: 
+  skillName: Slash
+  description: 
+--- !u!114 &-6227015550223834580
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 90885504196604343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8979b2e1cdd07474e8ce52aa3cb82947, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnitAnimator

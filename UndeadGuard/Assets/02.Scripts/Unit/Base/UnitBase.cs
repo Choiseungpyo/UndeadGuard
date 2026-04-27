@@ -1,28 +1,18 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
-// 모든 유닛의 공통 기반 클래스
-// 언데드 유닛과 적 유닛 모두 이 클래스를 상속받는다
 public abstract class UnitBase : MonoBehaviour, IUnit, IDamageable
 {
     [SerializeField] private TeamType team;
     [SerializeField] private UnitStats stats;
+    [SerializeField] private float tileMoveDuration = 0.2f;
 
-    // 애니메이션 제어 컴포넌트
     private UnitAnimator unitAnimator;
-
-    // 현재 그리드 위치
     private Vector2Int gridPosition;
-
-    // 이번 턴 이동 완료 여부
     private bool hasMoved;
-
-    // 이번 턴 행동 완료 여부
     private bool hasActed;
-
-    // 사망 여부
     private bool isDead;
-
-    // 풀 스폰으로 초기화 완료 여부. true이면 Start()의 위치 스냅을 건너뛴다
     private bool spawnInitialized;
 
     public TeamType Team => team;
@@ -31,55 +21,134 @@ public abstract class UnitBase : MonoBehaviour, IUnit, IDamageable
     public bool HasActed => hasActed;
     public bool IsDead => isDead;
     public UnitStats Stats => stats;
-
     public UnitAnimator UnitAnimator => unitAnimator;
 
     protected virtual void Awake()
     {
-        stats.Initialize();
+        stats?.Initialize();
         unitAnimator = GetComponent<UnitAnimator>();
     }
 
     protected virtual void Start()
     {
-        // 풀 스폰으로 이미 초기화된 경우 위치 스냅을 건너뛴다
         if (spawnInitialized) return;
         if (GridManager.Instance == null) return;
 
-        // 씬에 배치된 위치를 기준으로 그리드 좌표를 계산하고
-        // X, Z를 타일 중앙으로 스냅한다. Y는 씬에 설정된 높이를 유지한다
         var pos = GridManager.Instance.WorldToGrid(transform.position);
         gridPosition = pos;
+
         var center = GridManager.Instance.GridToWorld(pos);
         transform.position = new Vector3(center.x, transform.position.y, center.z);
     }
 
-    // 그리드 위치를 설정한다
     public void SetGridPosition(Vector2Int position)
     {
         gridPosition = position;
     }
 
-    // 피해를 받아 체력을 감소시키고 사망 처리를 수행한다
     public void TakeDamage(int amount)
     {
         if (isDead) return;
 
+        int previousHp = stats.CurrentHp;
         stats.ApplyDamage(amount);
-        unitAnimator?.TriggerHit();
+        int actualDamage = Mathf.Max(0, previousHp - stats.CurrentHp);
 
-        EventBus.Instance.Publish(new UnitAttackedEvent
+        EventBus.Instance.Publish(new DamageTakenEvent
         {
-            Attacker = null,
             Target = this,
-            Damage = amount
+            TargetBehaviour = this,
+            Damage = actualDamage,
+            CurrentHp = stats.CurrentHp,
+            MaxHp = stats.MaxHp
         });
 
         if (stats.IsEmpty)
             Die();
     }
 
-    // 사망 처리를 수행한다
+    public virtual void PerformAttack(UnitBase target)
+    {
+        if (isDead) return;
+        if (target == null || target.IsDead) return;
+
+        FaceToward(target.GridPosition);
+        unitAnimator?.TriggerAttack();
+        AttackEffectService.Play(this, target.GridPosition, AttackActionIds.BasicAttack);
+
+        int damage = stats.PhysicalAttack;
+        target.TakeDamage(damage);
+
+        EventBus.Instance.Publish(new UnitAttackedEvent
+        {
+            Attacker = this,
+            Target = target,
+            Damage = damage
+        });
+    }
+
+    public virtual IEnumerator MoveAlongPath(List<Vector2Int> path)
+    {
+        if (isDead) yield break;
+        if (path == null || path.Count <= 1) yield break;
+        if (GridManager.Instance == null) yield break;
+
+        EventBus.Instance.Publish(new UnitMoveStartedEvent { Unit = this });
+        unitAnimator?.SetWalking(true);
+
+        float duration = Mathf.Max(0.01f, tileMoveDuration);
+
+        for (int i = 1; i < path.Count; i++)
+        {
+            Vector2Int to = path[i];
+            Vector2Int from = gridPosition;
+
+            FaceToward(to);
+
+            Vector3 startWorld = transform.position;
+            Vector3 center = GridManager.Instance.GridToWorld(to);
+            Vector3 endWorld = new Vector3(center.x, transform.position.y, center.z);
+
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                transform.position = Vector3.Lerp(startWorld, endWorld, t);
+                yield return null;
+            }
+
+            transform.position = endWorld;
+            gridPosition = to;
+
+            EventBus.Instance.Publish(new UnitMovedEvent
+            {
+                Unit = this,
+                From = from,
+                To = to
+            });
+        }
+
+        unitAnimator?.SetWalking(false);
+        MarkAsMoved();
+
+        EventBus.Instance.Publish(new UnitMoveFinishedEvent { Unit = this });
+    }
+
+    public virtual void FaceToward(Vector2Int targetGrid)
+    {
+        if (GridManager.Instance == null) return;
+
+        Vector3 targetWorld = GridManager.Instance.GridToWorld(targetGrid);
+        Vector3 direction = targetWorld - transform.position;
+        direction.y = 0f;
+
+        if (direction.sqrMagnitude <= 0.0001f)
+            return;
+
+        transform.rotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
+    }
+
     public virtual void Die()
     {
         isDead = true;
@@ -94,27 +163,23 @@ public abstract class UnitBase : MonoBehaviour, IUnit, IDamageable
         gameObject.SetActive(false);
     }
 
-    // 이동 완료 상태로 표시한다
     public void MarkAsMoved()
     {
         hasMoved = true;
     }
 
-    // 행동 완료 상태로 표시한다
     public void MarkAsActed()
     {
         hasActed = true;
     }
 
-    // 턴 시작 시 이동 및 행동 상태를 초기화한다
     public void ResetTurnState()
     {
         hasMoved = false;
         hasActed = false;
     }
 
-    // 부활 처리를 수행한다. 체력을 초기화하고 지정 위치에 다시 배치한다
-    public void Revive(Vector2Int position)
+    public virtual void Revive(Vector2Int position)
     {
         isDead = false;
         gridPosition = position;
@@ -129,8 +194,6 @@ public abstract class UnitBase : MonoBehaviour, IUnit, IDamageable
         });
     }
 
-    // 풀에서 꺼낼 때 유닛 상태를 초기화한다
-    // 이벤트 없이 조용히 리셋하며 Start()의 위치 스냅 중복 실행을 막는다
     public void PrepareForSpawn(Vector2Int position, Vector3 worldPos)
     {
         spawnInitialized = true;
@@ -142,3 +205,4 @@ public abstract class UnitBase : MonoBehaviour, IUnit, IDamageable
         transform.position = new Vector3(worldPos.x, transform.position.y, worldPos.z);
     }
 }
+

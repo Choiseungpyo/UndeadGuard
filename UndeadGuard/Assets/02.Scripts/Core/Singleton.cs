@@ -11,7 +11,7 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
-            Destroy(gameObject);
+            gameObject.SetActive(false);
             return;
         }
 

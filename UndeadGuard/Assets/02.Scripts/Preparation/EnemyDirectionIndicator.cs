@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 // 준비 단계에서 적이 등장할 스폰 구역을 그리드에 표시한다
@@ -7,18 +7,18 @@ public class EnemyDirectionIndicator : MonoBehaviour
 {
     private void OnEnable()
     {
-        EventBus.Instance.Subscribe<PhaseChangedEvent>(OnPhaseChanged);
+        EventBus.Instance.Subscribe<StageChangedEvent>(OnStageChanged);
     }
 
     private void OnDisable()
     {
-        EventBus.Instance.Unsubscribe<PhaseChangedEvent>(OnPhaseChanged);
+        EventBus.Instance.Unsubscribe<StageChangedEvent>(OnStageChanged);
         GridHighlighter.Instance?.ClearEnemySpawnZones();
     }
 
-    private void OnPhaseChanged(PhaseChangedEvent e)
+    private void OnStageChanged(StageChangedEvent e)
     {
-        if (e.CurrentPhase == PhaseType.Preparation)
+        if (e.CurrentStage == StageType.Preparation)
         {
             List<Vector2Int> positions = GridManager.Instance.MapDefinition
                 .GetSpawnZonePositions(SpawnZoneType.EnemySpawn);

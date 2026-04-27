@@ -1,0 +1,34 @@
+.hp-bar-root {
+    width: 72px;
+    height: 20px;
+    align-items: center;
+}
+
+.hp-bar-bg {
+    width: 72px;
+    height: 8px;
+    background-color: rgba(0, 0, 0, 0.75);
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+}
+
+.hp-bar-fill {
+    width: 100%;
+    height: 100%;
+    background-color: rgb(62, 194, 82);
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+}
+
+.hp-bar-label {
+    width: 72px;
+    height: 10px;
+    margin-top: 2px;
+    color: white;
+    font-size: 9px;
+    -unity-text-align: middle-center;
+}

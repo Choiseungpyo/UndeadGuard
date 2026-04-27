@@ -1,7 +1,5 @@
 using UnityEngine;
 
-// 언데드 핵의 체력을 관리한다
-// 핵의 체력이 0이 되면 게임 오버 이벤트를 발행한다
 public class CoreHealth : MonoBehaviour, IDamageable
 {
     [SerializeField] private int maxHp = 100;
@@ -26,12 +24,22 @@ public class CoreHealth : MonoBehaviour, IDamageable
         });
     }
 
-    // 피해를 받아 핵 체력을 감소시킨다
     public void TakeDamage(int amount)
     {
         if (currentHp <= 0) return;
 
+        int previousHp = currentHp;
         currentHp = Mathf.Max(0, currentHp - amount);
+        int actualDamage = Mathf.Max(0, previousHp - currentHp);
+
+        EventBus.Instance.Publish(new DamageTakenEvent
+        {
+            Target = this,
+            TargetBehaviour = this,
+            Damage = actualDamage,
+            CurrentHp = currentHp,
+            MaxHp = maxHp
+        });
 
         EventBus.Instance.Publish(new CoreHealthChangedEvent
         {
@@ -40,8 +48,6 @@ public class CoreHealth : MonoBehaviour, IDamageable
         });
 
         if (currentHp <= 0)
-        {
             EventBus.Instance.Publish(new CoreDestroyedEvent());
-        }
     }
 }

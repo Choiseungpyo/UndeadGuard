@@ -2,191 +2,198 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // 이동 가능 칸, 공격 가능 칸, 경로 미리보기 타일 하이라이트를 관리한다
-// 각 하이라이트 종류를 별도 풀로 관리하여 색상을 구분한다
+// 쿼드 오브젝트는 단일 풀에서 꺼내 색상만 바꿔 재사용한다
+// 경로 미리보기는 이동 가능 타일 오브젝트의 색상을 직접 변경한다
 public class GridHighlighter : Singleton<GridHighlighter>
 {
-    // 이동 가능 칸 색상 (파란색 계열)
-    [SerializeField] private Color movableColor = new Color(0.2f, 0.6f, 1f, 0.5f);
+    [SerializeField] private float highlightY = 0.05f;
 
-    // 경로 미리보기 칸 색상 (노란색 계열)
-    [SerializeField] private Color pathColor = new Color(1f, 0.8f, 0.2f, 0.65f);
+    [SerializeField] private Color movableColor    = new Color(0.2f, 0.6f, 1f,   0.5f);
+    [SerializeField] private Color pathColor       = new Color(1f,   0.8f, 0.2f, 0.65f);
+    [SerializeField] private Color attackableColor = new Color(1f,   0.2f, 0.2f, 0.6f);
+    [SerializeField] private Color skillRangeColor = new Color(0.8f, 0.2f, 1f,   0.5f);
+    [SerializeField] private Color enemySpawnColor = new Color(1f,   0.55f,0.1f, 0.5f);
 
-    // 공격 가능 칸 색상 (빨간색 계열)
-    [SerializeField] private Color attackableColor = new Color(1f, 0.2f, 0.2f, 0.6f);
+    // 단일 공유 풀
+    private readonly List<GameObject> pool = new List<GameObject>();
 
-    // 스킬 범위 칸 색상 (보라색 계열)
-    [SerializeField] private Color skillRangeColor = new Color(0.8f, 0.2f, 1f, 0.5f);
+    // 이동 가능 타일: 위치 기반 맵으로 관리 (경로 색 변경 시 오브젝트를 바로 찾기 위함)
+    private readonly Dictionary<Vector2Int, GameObject> movableMap = new Dictionary<Vector2Int, GameObject>();
 
-    // 적 스폰 구역 표시 색상 (주황색 계열)
-    [SerializeField] private Color enemySpawnColor = new Color(1f, 0.55f, 0.1f, 0.5f);
+    // 현재 경로 색(노란색)으로 표시 중인 위치 목록
+    private readonly List<Vector2Int> currentPathPositions = new List<Vector2Int>();
 
-    // 이동 가능 칸 풀
-    private readonly List<GameObject> movablePool = new List<GameObject>();
-    private readonly List<GameObject> movableActive = new List<GameObject>();
-
-    // 경로 미리보기 칸 풀
-    private readonly List<GameObject> pathPool = new List<GameObject>();
-    private readonly List<GameObject> pathActive = new List<GameObject>();
-
-    // 공격 가능 칸 풀
-    private readonly List<GameObject> attackablePool = new List<GameObject>();
+    // 공격/스킬/스폰 타입별 활성 목록
     private readonly List<GameObject> attackableActive = new List<GameObject>();
-
-    // 스킬 범위 칸 풀
-    private readonly List<GameObject> skillRangePool = new List<GameObject>();
     private readonly List<GameObject> skillRangeActive = new List<GameObject>();
-
-    // 적 스폰 구역 풀
-    private readonly List<GameObject> enemySpawnPool = new List<GameObject>();
     private readonly List<GameObject> enemySpawnActive = new List<GameObject>();
 
-    // 지정한 타일 좌표 목록에 이동 가능 하이라이트를 표시한다
+    #region Move
+
     public void ShowMovable(List<Vector2Int> positions)
     {
         ClearMovable();
-
         foreach (var pos in positions)
         {
-            var obj = GetFromPool(movablePool, movableColor);
-            obj.transform.position = GridManager.Instance.GridToWorld(pos) + Vector3.up * 0.05f;
+            var obj = Rent(movableColor);
+            obj.transform.position = GridManager.Instance.GridToWorld(pos) + Vector3.up * highlightY;
             obj.SetActive(true);
-            movableActive.Add(obj);
+            movableMap[pos] = obj;
         }
     }
 
-    // 지정한 타일 좌표 목록에 공격 가능 하이라이트를 표시한다
+    public void ClearMovable()
+    {
+        ClearPath();
+        foreach (var obj in movableMap.Values)
+        {
+            obj.SetActive(false);
+            pool.Add(obj);
+        }
+        movableMap.Clear();
+    }
+
+    #endregion
+
+    #region Path Preview
+
+    // 경로 타일의 색상을 노란색으로 바꾼다. 시작 위치(path[0])는 제외한다
+    // 이동 가능 타일 오브젝트 자체의 색을 변경하므로 별도 오브젝트를 생성하지 않는다
+    public void ShowPath(List<Vector2Int> path)
+    {
+        ClearPath();
+        for (int i = 1; i < path.Count; i++)
+        {
+            var pos = path[i];
+            if (!movableMap.TryGetValue(pos, out var obj)) continue;
+
+            SetColor(obj, pathColor);
+            currentPathPositions.Add(pos);
+        }
+    }
+
+    // 경로 타일을 원래 이동 가능 색(파란색)으로 되돌린다
+    public void ClearPath()
+    {
+        foreach (var pos in currentPathPositions)
+        {
+            if (movableMap.TryGetValue(pos, out var obj))
+                SetColor(obj, movableColor);
+        }
+        currentPathPositions.Clear();
+    }
+
+    #endregion
+
+    #region Attack
+
     public void ShowAttackable(List<Vector2Int> positions)
     {
         ClearAttackable();
-
         foreach (var pos in positions)
         {
-            var obj = GetFromPool(attackablePool, attackableColor);
-            // 이동 가능 칸보다 살짝 위에 표시하여 겹침 시 공격 가능 칸이 위에 보이도록 한다
-            obj.transform.position = GridManager.Instance.GridToWorld(pos) + Vector3.up * 0.07f;
+            var obj = Rent(attackableColor);
+            obj.transform.position = GridManager.Instance.GridToWorld(pos) + Vector3.up * highlightY;
             obj.SetActive(true);
             attackableActive.Add(obj);
         }
     }
 
-    // 지정한 타일 좌표 목록에 스킬 범위 하이라이트를 표시한다
+    public void ClearAttackable()
+    {
+        Return(attackableActive);
+    }
+
+    #endregion
+
+    #region Skill
+
     public void ShowSkillRange(List<Vector2Int> positions)
     {
         ClearSkillRange();
-
         foreach (var pos in positions)
         {
-            var obj = GetFromPool(skillRangePool, skillRangeColor);
-            obj.transform.position = GridManager.Instance.GridToWorld(pos) + Vector3.up * 0.09f;
+            var obj = Rent(skillRangeColor);
+            obj.transform.position = GridManager.Instance.GridToWorld(pos) + Vector3.up * highlightY;
             obj.SetActive(true);
             skillRangeActive.Add(obj);
         }
     }
 
-    // 지정한 경로 타일 목록에 경로 미리보기 하이라이트를 표시한다
-    // 시작 위치(path[0])는 제외하고 표시한다
-    public void ShowPath(List<Vector2Int> path)
-    {
-        ClearPath();
-
-        for (int i = 1; i < path.Count; i++)
-        {
-            var obj = GetFromPool(pathPool, pathColor);
-            // 이동 가능 칸보다 살짝 더 위에 표시하여 겹침을 방지한다
-            obj.transform.position = GridManager.Instance.GridToWorld(path[i]) + Vector3.up * 0.1f;
-            obj.SetActive(true);
-            pathActive.Add(obj);
-        }
-    }
-
-    // 경로 미리보기 하이라이트만 제거한다
-    public void ClearPath()
-    {
-        foreach (var obj in pathActive)
-            obj.SetActive(false);
-
-        pathPool.AddRange(pathActive);
-        pathActive.Clear();
-    }
-
-    // 이동 가능 칸 하이라이트만 제거한다
-    public void ClearMovable()
-    {
-        foreach (var obj in movableActive)
-            obj.SetActive(false);
-
-        movablePool.AddRange(movableActive);
-        movableActive.Clear();
-    }
-
-    // 공격 가능 칸 하이라이트만 제거한다
-    public void ClearAttackable()
-    {
-        foreach (var obj in attackableActive)
-            obj.SetActive(false);
-
-        attackablePool.AddRange(attackableActive);
-        attackableActive.Clear();
-    }
-
-    // 스킬 범위 하이라이트만 제거한다
     public void ClearSkillRange()
     {
-        foreach (var obj in skillRangeActive)
-            obj.SetActive(false);
-
-        skillRangePool.AddRange(skillRangeActive);
-        skillRangeActive.Clear();
+        Return(skillRangeActive);
     }
 
-    // 지정한 타일 좌표 목록에 적 스폰 구역 하이라이트를 표시한다
+    #endregion
+
+    #region Enemy Spawn
+
     public void ShowEnemySpawnZones(List<Vector2Int> positions)
     {
         ClearEnemySpawnZones();
-
         foreach (var pos in positions)
         {
-            var obj = GetFromPool(enemySpawnPool, enemySpawnColor);
-            obj.transform.position = GridManager.Instance.GridToWorld(pos) + Vector3.up * 0.03f;
+            var obj = Rent(enemySpawnColor);
+            obj.transform.position = GridManager.Instance.GridToWorld(pos) + Vector3.up * highlightY;
             obj.SetActive(true);
             enemySpawnActive.Add(obj);
         }
     }
 
-    // 적 스폰 구역 하이라이트를 제거한다
     public void ClearEnemySpawnZones()
     {
-        foreach (var obj in enemySpawnActive)
-            obj.SetActive(false);
-
-        enemySpawnPool.AddRange(enemySpawnActive);
-        enemySpawnActive.Clear();
+        Return(enemySpawnActive);
     }
 
-    // 모든 하이라이트를 제거한다
+    #endregion
+
+    #region Common
+
     public void ClearAll()
     {
         ClearMovable();
-        ClearPath();
         ClearAttackable();
         ClearSkillRange();
         ClearEnemySpawnZones();
     }
 
-    // 해당 색상 풀에서 오브젝트를 꺼내거나 새로 생성한다
-    private GameObject GetFromPool(List<GameObject> pool, Color color)
+    // 풀에서 오브젝트를 꺼내고 색상을 설정한다
+    private GameObject Rent(Color color)
     {
+        GameObject obj;
         if (pool.Count > 0)
         {
-            var obj = pool[pool.Count - 1];
+            obj = pool[pool.Count - 1];
             pool.RemoveAt(pool.Count - 1);
-            return obj;
         }
-        return CreateHighlightObject(color);
+        else
+        {
+            obj = CreateHighlightObject();
+        }
+
+        SetColor(obj, color);
+        return obj;
     }
 
-    // 지정한 색상의 하이라이트용 쿼드 오브젝트를 생성한다
-    private GameObject CreateHighlightObject(Color color)
+    // 활성 목록의 오브젝트를 전부 비활성화하고 공유 풀로 반환한다
+    private void Return(List<GameObject> active)
+    {
+        foreach (var obj in active)
+        {
+            obj.SetActive(false);
+            pool.Add(obj);
+        }
+        active.Clear();
+    }
+
+    private void SetColor(GameObject obj, Color color)
+    {
+        obj.GetComponent<Renderer>().material.color = color;
+    }
+
+    // 기본 하이라이트 쿼드 오브젝트를 생성한다
+    private GameObject CreateHighlightObject()
     {
         var obj = GameObject.CreatePrimitive(PrimitiveType.Quad);
         obj.name = "Highlight";
@@ -194,17 +201,18 @@ public class GridHighlighter : Singleton<GridHighlighter>
         obj.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
         obj.transform.localScale = Vector3.one * (GridManager.TileSpacing * 0.95f);
 
-        // 콜라이더는 필요 없으므로 제거한다
-        Destroy(obj.GetComponent<Collider>());
+        Collider collider = obj.GetComponent<Collider>();
+        if (collider != null)
+            collider.enabled = false;
 
-        var renderer = obj.GetComponent<Renderer>();
         var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-        mat.color = color;
         mat.SetFloat("_Surface", 1f);
         mat.renderQueue = 3000;
-        renderer.material = mat;
+        obj.GetComponent<Renderer>().material = mat;
 
         obj.SetActive(false);
         return obj;
     }
+
+    #endregion
 }

@@ -14,7 +14,8 @@ public static class MovementRangeCalculator
     };
 
     // 시작 위치에서 이동 범위 안에 있는 모든 타일 좌표를 반환한다
-    public static List<Vector2Int> Calculate(Vector2Int start, int moveRange, GridManager grid)
+    // mover를 전달하면 해당 유닛이 서 있는 칸은 점유 판정에서 제외된다
+    public static List<Vector2Int> Calculate(Vector2Int start, int moveRange, GridManager grid, UnitBase mover = null)
     {
         var reachable = new List<Vector2Int>();
         var visited = new HashSet<Vector2Int>();
@@ -39,7 +40,7 @@ public static class MovementRangeCalculator
                 var next = current + dir;
 
                 if (visited.Contains(next)) continue;
-                if (!grid.IsWalkable(next)) continue;
+                if (!grid.IsWalkableIgnoring(next, mover)) continue;
 
                 visited.Add(next);
                 queue.Enqueue((next, remaining - 1));

@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UIElements;
 
-// �غ� �ܰ�� ���� �ܰ��� ��� ��� UI�� �����Ѵ�
-// �ܰ� ����, �ڿ� ����, ���� ��ư �ؽ�Ʈ�� ���� ���� ���¿� �°� �����Ѵ�
 public class PhaseHeaderHUD : MonoBehaviour
 {
     [Header("References")]
@@ -10,26 +8,23 @@ public class PhaseHeaderHUD : MonoBehaviour
     [SerializeField] private CoreHealth coreHealth;
 
     [Header("UXML Names")]
-    [SerializeField] private string phaseTimeLabelName = "PhaseTimeLabel";
-    [SerializeField] private string phaseInfoALabelName = "PhaseInfoALabel";
-    [SerializeField] private string phaseInfoBBoxName = "PhaseInfoBBox";
-    [SerializeField] private string phaseInfoBLabelName = "PhaseInfoBLabel";
+    [SerializeField] private string dayLabelName = "DayLabel";
+    [SerializeField] private string phaseTypeLabelName = "PhaseTypeLabel";
+    [SerializeField] private string roundBoxName = "RoundBox";
+    [SerializeField] private string roundLabelName = "RoundLabel";
     [SerializeField] private string darkEnergyLabelName = "DarkEnergyLabel";
     [SerializeField] private string phaseSubInfoLabelName = "PhaseSubInfoLabel";
     [SerializeField] private string phaseEndButtonName = "PhaseEndButton";
 
-    [Header("Initial State")]
-    [SerializeField] private PhaseType initialPhase = PhaseType.Preparation;
-
-    private Label phaseTimeLabel;
-    private Label phaseInfoALabel;
-    private VisualElement phaseInfoBBox;
-    private Label phaseInfoBLabel;
+    private Label dayLabel;
+    private Label phaseTypeLabel;
+    private VisualElement roundBox;
+    private Label roundLabel;
     private Label darkEnergyLabel;
     private Label phaseSubInfoLabel;
     private Button phaseEndButton;
 
-    private PhaseType currentPhase;
+    private StageType CurrentStage;
     private int currentDarkEnergy;
     private int currentCommandPoint;
     private int currentCoreHp;
@@ -37,21 +32,23 @@ public class PhaseHeaderHUD : MonoBehaviour
 
     private void OnEnable()
     {
-        currentPhase = initialPhase;
+        CurrentStage = GameStageController.Instance != null
+            ? GameStageController.Instance.CurrentStage
+            : StageType.Preparation;
 
         UIDocument uiDocument = GetComponent<UIDocument>();
         if (uiDocument == null)
         {
-            Debug.LogError("UIDocument ������Ʈ�� ã�� �� �����ϴ�.");
+            Debug.LogError("UIDocument is null");
             return;
         }
 
         VisualElement root = uiDocument.rootVisualElement;
 
-        phaseTimeLabel = root.Q<Label>(phaseTimeLabelName);
-        phaseInfoALabel = root.Q<Label>(phaseInfoALabelName);
-        phaseInfoBBox = root.Q<VisualElement>(phaseInfoBBoxName);
-        phaseInfoBLabel = root.Q<Label>(phaseInfoBLabelName);
+        dayLabel = root.Q<Label>(dayLabelName);
+        phaseTypeLabel = root.Q<Label>(phaseTypeLabelName);
+        roundBox = root.Q<VisualElement>(roundBoxName);
+        roundLabel = root.Q<Label>(roundLabelName);
         darkEnergyLabel = root.Q<Label>(darkEnergyLabelName);
         phaseSubInfoLabel = root.Q<Label>(phaseSubInfoLabelName);
         phaseEndButton = root.Q<Button>(phaseEndButtonName);
@@ -59,7 +56,7 @@ public class PhaseHeaderHUD : MonoBehaviour
         if (phaseEndButton != null)
             phaseEndButton.RegisterCallback<ClickEvent>(OnPhaseEndClicked);
 
-        EventBus.Instance.Subscribe<PhaseChangedEvent>(OnPhaseChanged);
+        EventBus.Instance.Subscribe<StageChangedEvent>(OnStageChanged);
         EventBus.Instance.Subscribe<TurnChangedEvent>(OnTurnChanged);
         EventBus.Instance.Subscribe<ResourceChangedEvent>(OnResourceChanged);
         EventBus.Instance.Subscribe<CoreHealthChangedEvent>(OnCoreHealthChanged);
@@ -74,7 +71,7 @@ public class PhaseHeaderHUD : MonoBehaviour
         if (phaseEndButton != null)
             phaseEndButton.UnregisterCallback<ClickEvent>(OnPhaseEndClicked);
 
-        EventBus.Instance.Unsubscribe<PhaseChangedEvent>(OnPhaseChanged);
+        EventBus.Instance.Unsubscribe<StageChangedEvent>(OnStageChanged);
         EventBus.Instance.Unsubscribe<TurnChangedEvent>(OnTurnChanged);
         EventBus.Instance.Unsubscribe<ResourceChangedEvent>(OnResourceChanged);
         EventBus.Instance.Unsubscribe<CoreHealthChangedEvent>(OnCoreHealthChanged);
@@ -96,16 +93,19 @@ public class PhaseHeaderHUD : MonoBehaviour
         }
     }
 
-    private void OnPhaseChanged(PhaseChangedEvent e)
+    private void OnStageChanged(StageChangedEvent e)
     {
-        currentPhase = e.CurrentPhase;
+        CurrentStage = e.CurrentStage;
         RefreshAll();
     }
 
     private void OnTurnChanged(TurnChangedEvent e)
     {
-        if (currentPhase != PhaseType.Battle)
+        if (CurrentStage != StageType.Battle)
             return;
+
+        if (phaseEndButton != null)
+            phaseEndButton.SetEnabled(e.CurrentTurn == TurnType.Player);
 
         RefreshBattleHeader();
     }
@@ -122,7 +122,7 @@ public class PhaseHeaderHUD : MonoBehaviour
         currentCoreHp = e.CurrentHp;
         maxCoreHp = e.MaxHp;
 
-        if (currentPhase == PhaseType.Preparation)
+        if (CurrentStage == StageType.Preparation)
             RefreshPreparationHeader();
     }
 
@@ -133,14 +133,14 @@ public class PhaseHeaderHUD : MonoBehaviour
 
     private void OnPhaseEndClicked(ClickEvent e)
     {
-        if (currentPhase == PhaseType.Preparation)
+        if (CurrentStage == StageType.Preparation)
         {
-            if (GamePhaseController.Instance != null)
-                GamePhaseController.Instance.RequestNextWave();
+            if (GameStageController.Instance != null)
+                GameStageController.Instance.RequestNextWave();
             return;
         }
 
-        if (currentPhase == PhaseType.Battle)
+        if (CurrentStage == StageType.Battle)
         {
             EventBus.Instance.Publish(new EndTurnRequestedEvent());
         }
@@ -148,7 +148,7 @@ public class PhaseHeaderHUD : MonoBehaviour
 
     private void RefreshAll()
     {
-        if (currentPhase == PhaseType.Preparation)
+        if (CurrentStage == StageType.Preparation)
             RefreshPreparationHeader();
         else
             RefreshBattleHeader();
@@ -158,17 +158,17 @@ public class PhaseHeaderHUD : MonoBehaviour
     {
         int dayNumber = GetDisplayWaveNumber();
 
-        if (phaseTimeLabel != null)
-            phaseTimeLabel.text = $"�� {dayNumber}����";
+        if (dayLabel != null)
+            dayLabel.text = $"{dayNumber}일차";
 
-        if (phaseInfoALabel != null)
-            phaseInfoALabel.text = "��ġ";
+        if (phaseTypeLabel != null)
+            phaseTypeLabel.text = "정비";
 
-        if (phaseInfoBBox != null)
-            phaseInfoBBox.style.display = DisplayStyle.None;
+        if (roundBox != null)
+            roundBox.style.display = DisplayStyle.None;
 
-        if (phaseInfoBLabel != null)
-            phaseInfoBLabel.text = string.Empty;
+        if (roundLabel != null)
+            roundLabel.text = string.Empty;
 
         if (darkEnergyLabel != null)
             darkEnergyLabel.text = $"Dark Energy : {currentDarkEnergy}";
@@ -177,34 +177,34 @@ public class PhaseHeaderHUD : MonoBehaviour
             phaseSubInfoLabel.text = $"Core HP : {currentCoreHp} / {maxCoreHp}";
 
         if (phaseEndButton != null)
-            phaseEndButton.text = "��ġ ����";
+            phaseEndButton.text = "정비 완료";
     }
 
     private void RefreshBattleHeader()
     {
-        int nightNumber = GetDisplayWaveNumber();
-        int roundNumber = Mathf.Max(1, GameProgressTracker.Instance.CurrentRound);
+        int dayNumber = GetDisplayWaveNumber();
+        int roundNumber = Mathf.Max(1, GameProgress.Instance.CurrentRound);
 
-        if (phaseTimeLabel != null)
-            phaseTimeLabel.text = $"�� {nightNumber}";
+        if (dayLabel != null)
+            dayLabel.text = $"{dayNumber}일차";
 
-        if (phaseInfoALabel != null)
-            phaseInfoALabel.text = $"�� {roundNumber}";
+        if (phaseTypeLabel != null)
+            phaseTypeLabel.text = "배틀";
 
-        if (phaseInfoBBox != null)
-            phaseInfoBBox.style.display = DisplayStyle.Flex;
+        if (roundBox != null)
+            roundBox.style.display = DisplayStyle.Flex;
 
-        if (phaseInfoBLabel != null)
-            phaseInfoBLabel.text = "����";
+        if (roundLabel != null)
+            roundLabel.text = $"라운드 : {roundNumber}" ;
 
         if (darkEnergyLabel != null)
             darkEnergyLabel.text = $"Dark Energy : {currentDarkEnergy}";
 
         if (phaseSubInfoLabel != null)
-            phaseSubInfoLabel.text = $"�������Ʈ : {currentCommandPoint}";
+            phaseSubInfoLabel.text = $"Command Point : {currentCommandPoint}";
 
         if (phaseEndButton != null)
-            phaseEndButton.text = "�� ����";
+            phaseEndButton.text = "턴 종료";
     }
 
     private void RefreshResourceTexts()
@@ -212,7 +212,7 @@ public class PhaseHeaderHUD : MonoBehaviour
         if (darkEnergyLabel != null)
             darkEnergyLabel.text = $"Dark Energy : {currentDarkEnergy}";
 
-        if (currentPhase == PhaseType.Preparation)
+        if (CurrentStage == StageType.Preparation)
         {
             if (phaseSubInfoLabel != null)
                 phaseSubInfoLabel.text = $"Core HP : {currentCoreHp} / {maxCoreHp}";
@@ -220,7 +220,7 @@ public class PhaseHeaderHUD : MonoBehaviour
         else
         {
             if (phaseSubInfoLabel != null)
-                phaseSubInfoLabel.text = $"�������Ʈ : {currentCommandPoint}";
+                phaseSubInfoLabel.text = $"Command Point : {currentCommandPoint}";
         }
     }
 
@@ -232,3 +232,4 @@ public class PhaseHeaderHUD : MonoBehaviour
         return Mathf.Max(1, waveManager.CurrentWaveNumber);
     }
 }
+

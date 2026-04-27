@@ -15,6 +15,11 @@ public class TurnManager : MonoBehaviour
     // 현재 웨이브 내 라운드 수 (웨이브 시작마다 초기화)
     private int roundCount;
 
+    [Header("Enemy Turn Timing")]
+    [SerializeField] private float moveToAttackDelay = 0.3f;
+    [SerializeField] private float attackStepDelay = 0.45f;
+    [SerializeField] private float endOfEnemyTurnDelay = 0.9f;
+
     public TurnType CurrentTurn => currentTurn;
     public int RoundCount => roundCount;
 
@@ -22,14 +27,14 @@ public class TurnManager : MonoBehaviour
     {
         EventBus.Instance.Subscribe<WaveStartedEvent>(OnWaveStarted);
         EventBus.Instance.Subscribe<EndTurnRequestedEvent>(OnEndTurnRequested);
-        EventBus.Instance.Subscribe<PhaseChangedEvent>(OnPhaseChanged);
+        EventBus.Instance.Subscribe<StageChangedEvent>(OnStageChanged);
     }
 
     private void OnDisable()
     {
         EventBus.Instance.Unsubscribe<WaveStartedEvent>(OnWaveStarted);
         EventBus.Instance.Unsubscribe<EndTurnRequestedEvent>(OnEndTurnRequested);
-        EventBus.Instance.Unsubscribe<PhaseChangedEvent>(OnPhaseChanged);
+        EventBus.Instance.Unsubscribe<StageChangedEvent>(OnStageChanged);
     }
 
     // 웨이브(Phase) 시작 시 라운드를 초기화하고 플레이어 턴을 시작한다
@@ -40,23 +45,16 @@ public class TurnManager : MonoBehaviour
     }
 
     // 배치 단계 진입 시 턴 상태를 초기화한다
-    private void OnPhaseChanged(PhaseChangedEvent e)
+    private void OnStageChanged(StageChangedEvent e)
     {
-        if (e.CurrentPhase == PhaseType.Preparation)
+        if (e.CurrentStage == StageType.Preparation)
         {
             isEnemyTurnRunning = false;
             roundCount = 0;
         }
     }
 
-    // 플레이어가 턴 종료 버튼을 눌렀을 때 처리한다
-    private void OnEndTurnRequested(EndTurnRequestedEvent e)
-    {
-        if (currentTurn != TurnType.Player) return;
-        if (isEnemyTurnRunning) return;
-
-        StartCoroutine(RunEnemyTurn());
-    }
+    #region Player Turn
 
     // 플레이어 턴을 시작한다
     private void StartPlayerTurn()
@@ -70,8 +68,21 @@ public class TurnManager : MonoBehaviour
         EventBus.Instance.Publish(new TurnChangedEvent { CurrentTurn = TurnType.Player });
     }
 
-    // 적 턴을 그룹 단위로 실행한다
-    // 같은 타겟을 목표로 하는 적끼리 그룹으로 묶고 타겟 위치 기준으로 정렬한다
+    // 플레이어가 턴 종료 버튼을 눌렀을 때 처리한다
+    private void OnEndTurnRequested(EndTurnRequestedEvent e)
+    {
+        if (currentTurn != TurnType.Player) return;
+        if (isEnemyTurnRunning) return;
+
+        StartCoroutine(RunEnemyTurn());
+    }
+
+    #endregion
+
+    #region Enemy Turn
+
+    // 적 턴을 이동 단계 → 공격 단계 순으로 실행한다
+    // 공격/피격 연출이 끝날 시간을 확보한 뒤에 플레이어 턴으로 전환한다.
     private IEnumerator RunEnemyTurn()
     {
         isEnemyTurnRunning = true;
@@ -79,9 +90,9 @@ public class TurnManager : MonoBehaviour
 
         EventBus.Instance.Publish(new TurnChangedEvent { CurrentTurn = TurnType.Enemy });
 
-        IReadOnlyList<UnitBase> allUnits = UnitRegistry.Instance.GetAllUnits();
+        // 턴 시작 시점의 유닛 목록을 스냅샷으로 고정한다
+        List<UnitBase> allUnits = new List<UnitBase>(UnitRegistry.Instance.GetAllUnits());
 
-        // 살아있는 적 유닛의 AI 컴포넌트를 수집한다
         List<EnemyAI> enemyAIs = new List<EnemyAI>();
         foreach (UnitBase unit in allUnits)
         {
@@ -90,42 +101,42 @@ public class TurnManager : MonoBehaviour
             EnemyAI ai = unit.GetComponent<EnemyAI>();
             if (ai != null)
                 enemyAIs.Add(ai);
+            else
+                Debug.LogWarning($"[TurnManager] 적 유닛 {unit.name}에 EnemyAI 컴포넌트가 없습니다.");
         }
 
-        // 타겟 위치 기준으로 적을 그룹으로 묶는다
-        Dictionary<Vector2Int, List<EnemyAI>> groups = new Dictionary<Vector2Int, List<EnemyAI>>();
+        if (enemyAIs.Count == 0)
+            Debug.LogWarning("[TurnManager] 행동할 적 유닛이 없습니다. UnitRegistry 등록 여부와 EnemyAI 컴포넌트를 확인하세요.");
+
+        // 1단계: 모든 적이 순서대로 이동한다
         foreach (EnemyAI ai in enemyAIs)
         {
-            Vector2Int targetPos = ai.GetTargetGridPosition(new List<UnitBase>(allUnits));
-            if (!groups.ContainsKey(targetPos))
-                groups[targetPos] = new List<EnemyAI>();
-            groups[targetPos].Add(ai);
+            if (ai.GetComponent<UnitBase>().IsDead) continue;
+            yield return StartCoroutine(ai.ExecuteMove(allUnits));
         }
 
-        // 타겟 x 오름차순, y 내림차순으로 그룹을 정렬한다
-        List<Vector2Int> sortedKeys = new List<Vector2Int>(groups.Keys);
-        sortedKeys.Sort((a, b) =>
+        float moveDelay = Mathf.Max(0f, moveToAttackDelay);
+        if (moveDelay > 0f)
+            yield return new WaitForSeconds(moveDelay);
+
+        // 2단계: 모든 적이 순서대로 공격한다
+        float perAttackDelay = Mathf.Max(0f, attackStepDelay);
+        foreach (EnemyAI ai in enemyAIs)
         {
-            if (a.x != b.x) return a.x.CompareTo(b.x);
-            return b.y.CompareTo(a.y);
-        });
+            if (ai.GetComponent<UnitBase>().IsDead) continue;
 
-        // 그룹 순서대로 각 적의 행동을 실행한다
-        foreach (Vector2Int key in sortedKeys)
-        {
-            foreach (EnemyAI ai in groups[key])
-            {
-                UnitBase unitBase = ai.GetComponent<UnitBase>();
-                if (unitBase == null || unitBase.IsDead) continue;
-
-                yield return StartCoroutine(ai.ExecuteTurn(new List<UnitBase>(allUnits)));
-            }
-
-            // 그룹 간 짧은 대기를 두어 가독성을 높인다
-            yield return new WaitForSeconds(0.2f);
+            bool attacked = ai.ExecuteAttack(allUnits);
+            if (attacked && perAttackDelay > 0f)
+                yield return new WaitForSeconds(perAttackDelay);
         }
+
+        float endDelay = Mathf.Max(0f, endOfEnemyTurnDelay);
+        if (endDelay > 0f)
+            yield return new WaitForSeconds(endDelay);
 
         isEnemyTurnRunning = false;
         StartPlayerTurn();
     }
+
+    #endregion
 }

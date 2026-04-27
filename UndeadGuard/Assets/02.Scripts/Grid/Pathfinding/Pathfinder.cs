@@ -15,7 +15,8 @@ public static class Pathfinder
 
     // 시작 위치에서 목표 위치까지의 최단 경로를 반환한다
     // 반환값은 시작 위치 포함. 경로가 없으면 빈 리스트를 반환한다
-    public static List<Vector2Int> FindPath(Vector2Int start, Vector2Int goal, GridManager grid)
+    // mover를 전달하면 해당 유닛이 서 있는 칸은 점유 판정에서 제외된다
+    public static List<Vector2Int> FindPath(Vector2Int start, Vector2Int goal, GridManager grid, UnitBase mover = null)
     {
         var openSet = new List<Vector2Int> { start };
         var cameFrom = new Dictionary<Vector2Int, Vector2Int>();
@@ -41,7 +42,7 @@ public static class Pathfinder
             {
                 var neighbor = current + dir;
 
-                if (!grid.IsWalkable(neighbor)) continue;
+                if (!grid.IsWalkableIgnoring(neighbor, mover)) continue;
 
                 int tentativeG = gScore[current] + 1;
 

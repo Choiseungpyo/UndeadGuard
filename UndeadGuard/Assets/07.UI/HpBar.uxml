@@ -1,0 +1,9 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/07.UI/HpBar.uss?fileID=7433441132597879392&amp;guid=dbb2bb5d3873461ba1ca473fa8334891&amp;type=3#HpBar"/>
+    <ui:VisualElement name="HpBarRoot" class="hp-bar-root">
+        <ui:VisualElement name="HpBarBackground" class="hp-bar-bg" style="background-color: rgba(255, 255, 255, 0.75);">
+            <ui:VisualElement name="HpFill" class="hp-bar-fill"/>
+        </ui:VisualElement>
+        <ui:Label name="HpLabel" text="0 / 0" class="hp-bar-label"/>
+    </ui:VisualElement>
+</ui:UXML>

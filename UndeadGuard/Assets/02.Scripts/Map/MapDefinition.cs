@@ -143,6 +143,26 @@ public sealed class MapDefinition : ScriptableObject
         cells[index] = cell;
     }
 
+    // 클릭한 칸을 좌하단 앵커로 삼아 2x2 영역을 코어로 칠한다
+    public void PaintCoreBlock(int x, int z)
+    {
+        EnsureInitialized();
+        ClearSingle(StructureType.Core);
+
+        for (int dz = 0; dz <= 1; dz++)
+        {
+            for (int dx = 0; dx <= 1; dx++)
+            {
+                if (!IsInside(x + dx, z + dz)) continue;
+
+                int index = GetIndex(x + dx, z + dz);
+                MapCellData cell = cells[index];
+                cell.objectType = StructureType.Core;
+                cells[index] = cell;
+            }
+        }
+    }
+
     // 지정한 칸의 스폰 구역을 설정한다
     public void PaintSpawnZone(int x, int z, SpawnZoneType zoneType)
     {
