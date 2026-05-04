@@ -123,3 +123,4 @@ GoogleService-Info.plist
 # 프로젝트 개별 무시 항목
 # -------------------------
 UndeadGuard/Assets/09.Download/
+.claude/
