@@ -102,10 +102,6 @@ public sealed class AttackEffectService : Singleton<AttackEffectService>
         if (Instance != null)
             return Instance;
 
-        AttackEffectService found = FindFirstObjectByType<AttackEffectService>();
-        if (found != null)
-            return found;
-
         GameObject go = new GameObject(nameof(AttackEffectService));
         return go.AddComponent<AttackEffectService>();
     }
@@ -115,10 +111,10 @@ public sealed class AttackEffectService : Singleton<AttackEffectService>
         if (AttackPatternResolver.TryGetPattern(attacker, actionId, out pattern))
             return true;
 
-        if (string.Equals(actionId, AttackActionIds.BasicAttack, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(actionId, UnitActionIds.DefaultAction, StringComparison.OrdinalIgnoreCase))
             return false;
 
-        return AttackPatternResolver.TryGetPattern(attacker, AttackActionIds.BasicAttack, out pattern);
+        return AttackPatternResolver.TryGetPattern(attacker, UnitActionIds.DefaultAction, out pattern);
     }
 
     private static Vector3 ResolveSpawnPosition(UnitBase attacker, Vector2Int targetGridPosition)

@@ -1,0 +1,43 @@
+.intro-root {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    flex-grow: 1;
+}
+
+.opening-fade {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: rgb(0, 0, 0);
+    opacity: 1;
+}
+
+.subtitle-area {
+    position: absolute;
+    left: 8%;
+    right: 8%;
+    bottom: 72px;
+    min-height: 96px;
+    align-items: center;
+    justify-content: center;
+}
+
+.subtitle-text {
+    width: 100%;
+    color: rgb(255, 255, 255);
+    font-size: 38px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    white-space: normal;
+    opacity: 0;
+    background-color: rgba(0, 0, 0, 0.42);
+    padding-left: 28px;
+    padding-right: 28px;
+    padding-top: 18px;
+    padding-bottom: 18px;
+}

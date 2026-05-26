@@ -1,7 +1,7 @@
 ﻿// 게임 진행 수치를 중앙에서 보관하는 데이터 클래스
 // 이벤트를 수신해 값을 갱신하고, 다른 시스템이 읽을 수 있도록 프로퍼티를 노출한다
 // 페이즈 상태는 GameStageController가 관리하므로 이 클래스는 보관하지 않는다
-// GameManager가 생성하며, 하이라키 오브젝트를 필요로 하지 않는다
+// BattleGameRuntime이 생성하며, 하이라키 오브젝트를 필요로 하지 않는다
 //
 // 보관 항목
 //   현재 일차 (n일차)
@@ -20,6 +20,7 @@ public class GameProgress
     // 게임 시작 이후 전투가 한 번이라도 완료되었는지 여부
     // false이면 다음 배치 단계 진입 시 일차를 증가시키지 않는다
     private bool hasBattleCompleted;
+    private bool isCleanedUp;
 
     public int CurrentDay => currentDay;
     public int CurrentPhaseIndex => currentPhaseIndex;
@@ -29,7 +30,11 @@ public class GameProgress
 
     public GameProgress()
     {
+        if (Instance != null && !object.ReferenceEquals(Instance, this))
+            Instance.Cleanup();
+
         Instance = this;
+        isCleanedUp = false;
         EventBus.Instance.Subscribe<StageChangedEvent>(OnStageChanged);
         EventBus.Instance.Subscribe<WaveStartedEvent>(OnWaveStarted);
         EventBus.Instance.Subscribe<WaveClearedEvent>(OnWaveCleared);
@@ -38,10 +43,17 @@ public class GameProgress
 
     public void Cleanup()
     {
+        if (isCleanedUp)
+            return;
+
+        isCleanedUp = true;
         EventBus.Instance.Unsubscribe<StageChangedEvent>(OnStageChanged);
         EventBus.Instance.Unsubscribe<WaveStartedEvent>(OnWaveStarted);
         EventBus.Instance.Unsubscribe<WaveClearedEvent>(OnWaveCleared);
         EventBus.Instance.Unsubscribe<TurnChangedEvent>(OnTurnChanged);
+
+        if (object.ReferenceEquals(Instance, this))
+            Instance = null;
     }
 
     // 배치 단계 진입 시 전투 완료 플래그를 확인해 일차를 증가시키고 수치를 초기화한다

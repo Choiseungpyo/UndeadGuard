@@ -398,7 +398,7 @@ GameObject:
   - component: {fileID: 4480601}
   - component: {fileID: 4480600}
   m_Layer: 0
-  m_Name: BattleInputController
+  m_Name: BattleFieldInputController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -413,9 +413,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 4480599}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 90a14da832879ee49beb9b79b5629d42, type: 3}
+  m_Script: {fileID: 11500000, guid: ca5e363b532a8ad4f84f9af9f47ae0a3, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BattleInputController
+  m_EditorClassIdentifier: Assembly-CSharp::BattleFieldInputController
   mainCamera: {fileID: 1355091878}
   unitLayerMask:
     serializedVersion: 2

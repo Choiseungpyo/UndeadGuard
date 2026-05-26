@@ -41,8 +41,8 @@
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="BottomCenterActionBar" style="flex-grow: 1; position: absolute; left: 600px; right: 0; top: auto; width: 720px; height: 110px; bottom: 12px; align-items: center; justify-content: flex-start; flex-direction: row; padding-top: 12px; padding-right: 12px; padding-bottom: 12px; padding-left: 12px; background-color: rgba(0, 0, 0, 0.51); border-top-width: 1px; border-left-width: 1px; border-bottom-width: 1px; border-right-width: 1px; border-top-color: rgb(85, 78, 78); border-left-color: rgb(85, 78, 78); border-right-color: rgb(85, 78, 78); border-bottom-color: rgb(85, 78, 78); display: flex;">
-            <ui:Button text="공격" name="AttackButton" style="width: 80px; height: 80px; font-size: 16px; -unity-font-definition: url(&quot;project://database/Assets/11.Fonts/NeoDunggeunmoPro-Regular.ttf?fileID=12800000&amp;guid=661518f33b8013e47aa585418266fd42&amp;type=3#NeoDunggeunmoPro-Regular&quot;);"/>
-            <ui:Button text="스킬" name="SkillButton" style="width: 80px; height: 80px; font-size: 16px; margin-left: 8px; -unity-font-definition: url(&quot;project://database/Assets/11.Fonts/NeoDunggeunmoPro-Regular.ttf?fileID=12800000&amp;guid=661518f33b8013e47aa585418266fd42&amp;type=3#NeoDunggeunmoPro-Regular&quot;);"/>
+            <ui:Button text="Action" name="ActionButton0" style="width: 80px; height: 80px; font-size: 16px; -unity-font-definition: url(&quot;project://database/Assets/11.Fonts/NeoDunggeunmoPro-Regular.ttf?fileID=12800000&amp;guid=661518f33b8013e47aa585418266fd42&amp;type=3#NeoDunggeunmoPro-Regular&quot;);"/>
+            <ui:Button text="Action" name="ActionButton1" style="width: 80px; height: 80px; font-size: 16px; margin-left: 8px; -unity-font-definition: url(&quot;project://database/Assets/11.Fonts/NeoDunggeunmoPro-Regular.ttf?fileID=12800000&amp;guid=661518f33b8013e47aa585418266fd42&amp;type=3#NeoDunggeunmoPro-Regular&quot;);"/>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

@@ -1,0 +1,84 @@
+.tutorial-root {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: none;
+}
+
+.tutorial-dim-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.36);
+}
+
+.tutorial-message-panel {
+    position: absolute;
+    left: 50%;
+    bottom: 32px;
+    width: 760px;
+    min-height: 96px;
+    translate: -50% 0;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 24px;
+    padding-right: 18px;
+    padding-top: 14px;
+    padding-bottom: 14px;
+    background-color: rgba(12, 10, 10, 0.92);
+    border-top-width: 2px;
+    border-right-width: 2px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+    border-top-color: rgb(205, 188, 132);
+    border-right-color: rgb(205, 188, 132);
+    border-bottom-color: rgb(205, 188, 132);
+    border-left-color: rgb(205, 188, 132);
+}
+
+.tutorial-message-label {
+    flex-grow: 1;
+    white-space: normal;
+    font-size: 20px;
+    color: rgb(245, 234, 206);
+    -unity-font-definition: url("project://database/Assets/11.Fonts/NeoDunggeunmoPro-Regular.ttf?fileID=12800000&guid=661518f33b8013e47aa585418266fd42&type=3#NeoDunggeunmoPro-Regular");
+}
+
+.tutorial-next-button {
+    width: 92px;
+    height: 54px;
+    margin-left: 20px;
+    font-size: 18px;
+    color: rgb(25, 20, 18);
+    background-color: rgb(222, 198, 126);
+    -unity-font-definition: url("project://database/Assets/11.Fonts/NeoDunggeunmoPro-Regular.ttf?fileID=12800000&guid=661518f33b8013e47aa585418266fd42&type=3#NeoDunggeunmoPro-Regular");
+}
+
+.tutorial-target-frame {
+    position: absolute;
+    width: 96px;
+    height: 96px;
+    border-top-width: 4px;
+    border-right-width: 4px;
+    border-bottom-width: 4px;
+    border-left-width: 4px;
+    border-top-color: rgb(238, 211, 89);
+    border-right-color: rgb(238, 211, 89);
+    border-bottom-color: rgb(238, 211, 89);
+    border-left-color: rgb(238, 211, 89);
+    background-color: rgba(238, 211, 89, 0.08);
+}
+
+.tutorial-arrow {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    font-size: 28px;
+    color: rgb(238, 211, 89);
+    -unity-text-align: middle-center;
+}

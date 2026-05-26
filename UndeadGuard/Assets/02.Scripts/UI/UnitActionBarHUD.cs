@@ -1,57 +1,74 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 public class UnitActionBarHUD : MonoBehaviour
 {
     [SerializeField] private string actionBarName = "BottomCenterActionBar";
-    [SerializeField] private string attackButtonName = "AttackButton";
-    [SerializeField] private string skillButtonName = "SkillButton";
+    [SerializeField] private string actionButton0Name = "ActionButton0";
+    [SerializeField] private string actionButton1Name = "ActionButton1";
 
     private VisualElement actionBar;
-    private Button attackButton;
-    private Button skillButton;
+    private Button firstActionButton;
+    private Button secondActionButton;
+    private UIDocument uiDocument;
 
-    private UnitBase selectedUnit;
+    private UndeadUnit selectedUnit;
+    private bool isUnitMoving;
 
     private void OnEnable()
     {
-        UIDocument uiDocument = GetComponent<UIDocument>();
+        uiDocument = GetComponent<UIDocument>();
         if (uiDocument == null)
         {
             Debug.LogError("UIDocument component not found.");
             return;
         }
 
+        BattleInputGuard.Instance.RegisterDocument(uiDocument);
+
         VisualElement root = uiDocument.rootVisualElement;
 
         actionBar = root.Q<VisualElement>(actionBarName);
-        attackButton = root.Q<Button>(attackButtonName);
-        skillButton = root.Q<Button>(skillButtonName);
+        firstActionButton = root.Q<Button>(actionButton0Name);
+        secondActionButton = root.Q<Button>(actionButton1Name);
 
-        if (attackButton != null)
-            attackButton.RegisterCallback<PointerDownEvent>(OnAttackPointerDown, TrickleDown.TrickleDown);
+        if (firstActionButton != null)
+            firstActionButton.RegisterCallback<PointerDownEvent>(OnFirstActionPointerDown, TrickleDown.TrickleDown);
 
-        if (skillButton != null)
-            skillButton.RegisterCallback<PointerDownEvent>(OnSkillPointerDown, TrickleDown.TrickleDown);
+        if (secondActionButton != null)
+            secondActionButton.RegisterCallback<PointerDownEvent>(OnSecondActionPointerDown, TrickleDown.TrickleDown);
 
         Hide();
 
         EventBus.Instance.Subscribe<UnitSelectedEvent>(OnUnitSelected);
         EventBus.Instance.Subscribe<UnitDeselectedEvent>(OnUnitDeselected);
         EventBus.Instance.Subscribe<TurnChangedEvent>(OnTurnChanged);
+        EventBus.Instance.Subscribe<UnitMoveStartedEvent>(OnUnitMoveStarted);
+        EventBus.Instance.Subscribe<UnitMoveFinishedEvent>(OnUnitMoveFinished);
+        EventBus.Instance.Subscribe<TutorialStepChangedEvent>(OnTutorialStepChanged);
     }
 
     private void OnDisable()
     {
-        if (attackButton != null)
-            attackButton.UnregisterCallback<PointerDownEvent>(OnAttackPointerDown, TrickleDown.TrickleDown);
+        if (firstActionButton != null)
+            firstActionButton.UnregisterCallback<PointerDownEvent>(OnFirstActionPointerDown, TrickleDown.TrickleDown);
 
-        if (skillButton != null)
-            skillButton.UnregisterCallback<PointerDownEvent>(OnSkillPointerDown, TrickleDown.TrickleDown);
+        if (secondActionButton != null)
+            secondActionButton.UnregisterCallback<PointerDownEvent>(OnSecondActionPointerDown, TrickleDown.TrickleDown);
+
+        if (uiDocument != null)
+        {
+            if (BattleInputGuard.TryGetExisting(out var guard))
+                guard.UnregisterDocument(uiDocument);
+        }
 
         EventBus.Instance.Unsubscribe<UnitSelectedEvent>(OnUnitSelected);
         EventBus.Instance.Unsubscribe<UnitDeselectedEvent>(OnUnitDeselected);
         EventBus.Instance.Unsubscribe<TurnChangedEvent>(OnTurnChanged);
+        EventBus.Instance.Unsubscribe<UnitMoveStartedEvent>(OnUnitMoveStarted);
+        EventBus.Instance.Unsubscribe<UnitMoveFinishedEvent>(OnUnitMoveFinished);
+        EventBus.Instance.Unsubscribe<TutorialStepChangedEvent>(OnTutorialStepChanged);
     }
 
     private void OnUnitSelected(UnitSelectedEvent e)
@@ -59,8 +76,11 @@ public class UnitActionBarHUD : MonoBehaviour
         if (e.Unit.Team != TeamType.Undead)
             return;
 
-        selectedUnit = e.Unit;
-        RefreshSkillButtonState();
+        selectedUnit = e.Unit as UndeadUnit;
+        if (selectedUnit == null)
+            return;
+
+        RefreshActionButtons();
         Show();
     }
 
@@ -68,6 +88,18 @@ public class UnitActionBarHUD : MonoBehaviour
     {
         selectedUnit = null;
         Hide();
+    }
+
+    private void OnUnitMoveStarted(UnitMoveStartedEvent e)
+    {
+        isUnitMoving = true;
+        RefreshActionButtons();
+    }
+
+    private void OnUnitMoveFinished(UnitMoveFinishedEvent e)
+    {
+        isUnitMoving = false;
+        RefreshActionButtons();
     }
 
     private void OnTurnChanged(TurnChangedEvent e)
@@ -79,42 +111,85 @@ public class UnitActionBarHUD : MonoBehaviour
         Hide();
     }
 
-    private void OnAttackPointerDown(PointerDownEvent e)
+    private void OnTutorialStepChanged(TutorialStepChangedEvent e)
     {
-        UIWorldInputGuard.RequestSkipNextWorldClick();
-        EventBus.Instance.Publish(new AttackModeRequestedEvent());
+        RefreshActionButtons();
     }
 
-    private void OnSkillPointerDown(PointerDownEvent e)
+    private void OnFirstActionPointerDown(PointerDownEvent e)
     {
-        if (!CanUseSkill(selectedUnit))
+        RequestActionAtIndex(0);
+    }
+
+    private void OnSecondActionPointerDown(PointerDownEvent e)
+    {
+        RequestActionAtIndex(1);
+    }
+
+    private void RequestActionAtIndex(int actionIndex)
+    {
+        IUnitAction action = GetActionAtIndex(actionIndex);
+        if (isUnitMoving)
             return;
 
-        UIWorldInputGuard.RequestSkipNextWorldClick();
-        EventBus.Instance.Publish(new SkillModeRequestedEvent());
-    }
-
-    private void RefreshSkillButtonState()
-    {
-        if (skillButton == null)
+        if (!CanUseAction(action))
             return;
 
-        bool canUse = CanUseSkill(selectedUnit);
-        skillButton.style.display = canUse ? DisplayStyle.Flex : DisplayStyle.None;
-        skillButton.SetEnabled(canUse);
+        if (TutorialManager.Instance != null && !TutorialManager.Instance.CanPressAttackButton())
+            return;
 
-        UndeadUnit undead = selectedUnit as UndeadUnit;
-        ISkill skill = undead != null ? undead.GetSkill() : null;
-        if (skill != null && !string.IsNullOrWhiteSpace(skill.SkillName))
-            skillButton.text = skill.SkillName;
-        else
-            skillButton.text = "Skill";
+        UIFieldInputBlocker.RequestSkipNextWorldClick();
+        EventBus.Instance.Publish(new ActionModeRequestedEvent
+        {
+            Unit = selectedUnit,
+            Action = action
+        });
+
+        EventBus.Instance.Publish(new AttackModeRequestedEvent
+        {
+            Unit = selectedUnit,
+            Action = action
+        });
     }
 
-    private static bool CanUseSkill(UnitBase unit)
+    private void RefreshActionButtons()
     {
-        UndeadUnit undead = unit as UndeadUnit;
-        return undead != null && undead.GetSkill() != null;
+        RefreshActionButton(firstActionButton, 0);
+        RefreshActionButton(secondActionButton, 1);
+    }
+
+    private void RefreshActionButton(Button button, int actionIndex)
+    {
+        if (button == null)
+            return;
+
+        IUnitAction action = GetActionAtIndex(actionIndex);
+        bool canUse = !isUnitMoving && CanUseAction(action);
+        if (canUse && TutorialManager.Instance != null)
+            canUse = TutorialManager.Instance.CanPressAttackButton();
+
+        button.style.display = action != null ? DisplayStyle.Flex : DisplayStyle.None;
+        button.SetEnabled(canUse);
+        button.text = action != null && !string.IsNullOrWhiteSpace(action.DisplayName)
+            ? action.DisplayName
+            : "Action";
+    }
+
+    private IUnitAction GetActionAtIndex(int actionIndex)
+    {
+        if (selectedUnit == null)
+            return null;
+
+        IReadOnlyList<IUnitAction> actions = selectedUnit.GetActions();
+        if (actionIndex < 0 || actionIndex >= actions.Count)
+            return null;
+
+        return actions[actionIndex];
+    }
+
+    private static bool CanUseAction(IUnitAction action)
+    {
+        return action != null && action.CanUse();
     }
 
     private void Show()

@@ -1,0 +1,9 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/07.UI/IntroCutSceneHUD.uss?fileID=7433441132597879392&amp;guid=9676205241cb4f5bb8aa854a4a4232d9&amp;type=3#IntroCutSceneHUD"/>
+    <ui:VisualElement name="IntroCutSceneRoot" class="intro-root">
+        <ui:VisualElement name="OpeningFadePanel" class="opening-fade"/>
+        <ui:VisualElement name="SubtitleArea" class="subtitle-area">
+            <ui:Label name="SubtitleText" class="subtitle-text"/>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

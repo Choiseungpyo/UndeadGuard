@@ -144,8 +144,8 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8378f50cac008484aabe9011b659c75f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SlashSkill
-  skillName: Slash
+  m_EditorClassIdentifier: Assembly-CSharp::SlashAction
+  actionId: Slash
   description: 
 --- !u!114 &-6227015550223834580
 MonoBehaviour:

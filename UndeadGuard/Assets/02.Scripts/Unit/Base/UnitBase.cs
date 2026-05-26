@@ -72,9 +72,12 @@ public abstract class UnitBase : MonoBehaviour, IUnit, IDamageable
         if (isDead) return;
         if (target == null || target.IsDead) return;
 
-        FaceToward(target.GridPosition);
+        if (team == TeamType.Undead)
+            FaceTowardCardinal(target.GridPosition);
+        else
+            FaceToward(target.GridPosition);
         unitAnimator?.TriggerAttack();
-        AttackEffectService.Play(this, target.GridPosition, AttackActionIds.BasicAttack);
+        AttackEffectService.Play(this, target.GridPosition, UnitActionIds.DefaultAction);
 
         int damage = stats.PhysicalAttack;
         target.TakeDamage(damage);
@@ -149,6 +152,24 @@ public abstract class UnitBase : MonoBehaviour, IUnit, IDamageable
         transform.rotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
     }
 
+    private void FaceTowardCardinal(Vector2Int targetGrid)
+    {
+        Vector2Int delta = targetGrid - gridPosition;
+        if (delta == Vector2Int.zero)
+            return;
+
+        int absX = Mathf.Abs(delta.x);
+        int absY = Mathf.Abs(delta.y);
+
+        Vector2Int cardinalStep;
+        if (absY >= absX)
+            cardinalStep = new Vector2Int(0, delta.y > 0 ? 1 : -1);
+        else
+            cardinalStep = new Vector2Int(delta.x > 0 ? 1 : -1, 0);
+
+        FaceToward(gridPosition + cardinalStep);
+    }
+
     public virtual void Die()
     {
         isDead = true;
@@ -159,8 +180,6 @@ public abstract class UnitBase : MonoBehaviour, IUnit, IDamageable
             Unit = this,
             Position = gridPosition
         });
-
-        gameObject.SetActive(false);
     }
 
     public void MarkAsMoved()

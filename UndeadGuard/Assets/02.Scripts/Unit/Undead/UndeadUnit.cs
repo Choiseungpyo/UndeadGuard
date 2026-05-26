@@ -1,29 +1,37 @@
+using System.Collections.Generic;
 using UnityEngine;
 
-// 플레이어가 조종하는 언데드 유닛의 기반 클래스
-// 방패병, 전사, 창병, 법사가 이 클래스를 상속받는다
 public abstract class UndeadUnit : UnitBase
 {
-    // 이 언데드 유닛의 종류
     [SerializeField] private UndeadType undeadType;
 
-    // 이 유닛이 보유한 고유 스킬
-    // 자식 클래스에서 할당한다
-    protected ISkill skill;
+    private readonly List<IUnitAction> actions = new List<IUnitAction>();
+    private DefaultUnitAction defaultAction;
 
     public UndeadType UndeadType => undeadType;
 
-    // 스킬을 사용한다. 행동 완료 상태로 표시된다
-    public void UseSkill(Vector2Int targetPosition)
+    protected override void Awake()
     {
-        if (skill == null) return;
-        if (!skill.CanUse()) return;
-        if (HasActed) return;
-
-        skill.Execute(targetPosition);
-        MarkAsActed();
+        base.Awake();
+        defaultAction = new DefaultUnitAction(this);
     }
 
-    // 보유 스킬을 반환한다
-    public ISkill GetSkill() => skill;
+    public IReadOnlyList<IUnitAction> GetActions()
+    {
+        actions.Clear();
+
+        if (defaultAction == null)
+            defaultAction = new DefaultUnitAction(this);
+
+        actions.Add(defaultAction);
+
+        UnitActionBase[] componentActions = GetComponents<UnitActionBase>();
+        for (int i = 0; i < componentActions.Length; i++)
+        {
+            if (componentActions[i] != null)
+                actions.Add(componentActions[i]);
+        }
+
+        return actions;
+    }
 }

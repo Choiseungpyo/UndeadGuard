@@ -27,8 +27,11 @@ public class UnitRegistry : Singleton<UnitRegistry>
     [SerializeField] private List<EnemyPrefabEntry> enemyPrefabs = new List<EnemyPrefabEntry>();
     [SerializeField] private List<UndeadSpawnConfig> initialUndeadSpawns = new List<UndeadSpawnConfig>();
     [SerializeField] private int defaultPoolSize = 5;
+    [SerializeField] private float enemyReturnDelaySeconds = 1.2f;
 
     private readonly List<UnitBase> activeUnits = new List<UnitBase>();
+    private readonly HashSet<EnemyUnit> pendingEnemyRelease = new HashSet<EnemyUnit>();
+    private readonly Dictionary<EnemyUnit, Coroutine> pendingEnemyReleaseRoutines = new Dictionary<EnemyUnit, Coroutine>();
     private UnitTypePoolManager poolManager;
     private Transform poolRoot;
 
@@ -51,6 +54,13 @@ public class UnitRegistry : Singleton<UnitRegistry>
     private void OnDisable()
     {
         EventBus.Instance.Unsubscribe<EnemyDiedEvent>(OnEnemyDied);
+        foreach (var pair in pendingEnemyReleaseRoutines)
+        {
+            if (pair.Value != null)
+                StopCoroutine(pair.Value);
+        }
+        pendingEnemyReleaseRoutines.Clear();
+        pendingEnemyRelease.Clear();
     }
 
     private void InitializePools()
@@ -172,7 +182,26 @@ public class UnitRegistry : Singleton<UnitRegistry>
         if (e?.Unit == null)
             return;
 
-        ReturnEnemyToPool(e.Unit);
+        EnemyUnit enemyUnit = e.Unit;
+        if (pendingEnemyRelease.Contains(enemyUnit))
+            return;
+
+        pendingEnemyRelease.Add(enemyUnit);
+        Coroutine routine = StartCoroutine(ReturnEnemyToPoolAfterDelay(enemyUnit));
+        pendingEnemyReleaseRoutines[enemyUnit] = routine;
+    }
+
+    private System.Collections.IEnumerator ReturnEnemyToPoolAfterDelay(EnemyUnit unit)
+    {
+        float delay = Mathf.Max(0f, enemyReturnDelaySeconds);
+        if (delay > 0f)
+            yield return new WaitForSeconds(delay);
+
+        if (unit != null && unit.IsDead)
+            ReturnEnemyToPool(unit);
+
+        pendingEnemyReleaseRoutines.Remove(unit);
+        pendingEnemyRelease.Remove(unit);
     }
 
     private void ReturnEnemyToPool(EnemyUnit unit)
@@ -180,6 +209,8 @@ public class UnitRegistry : Singleton<UnitRegistry>
         if (unit == null)
             return;
 
+        pendingEnemyReleaseRoutines.Remove(unit);
+        pendingEnemyRelease.Remove(unit);
         activeUnits.Remove(unit);
         poolManager?.ReleaseEnemy(unit.EnemyType, unit);
     }
@@ -193,8 +224,16 @@ public class UnitRegistry : Singleton<UnitRegistry>
                 continue;
 
             activeUnits.RemoveAt(i);
-            if (unit is EnemyUnit enemyUnit)
+            EnemyUnit enemyUnit = unit as EnemyUnit;
+            if (enemyUnit != null)
+            {
+                if (pendingEnemyReleaseRoutines.TryGetValue(enemyUnit, out Coroutine routine) && routine != null)
+                    StopCoroutine(routine);
+
+                pendingEnemyReleaseRoutines.Remove(enemyUnit);
+                pendingEnemyRelease.Remove(enemyUnit);
                 poolManager?.ReleaseEnemy(enemyUnit.EnemyType, enemyUnit);
+            }
             else
                 unit.gameObject.SetActive(false);
         }

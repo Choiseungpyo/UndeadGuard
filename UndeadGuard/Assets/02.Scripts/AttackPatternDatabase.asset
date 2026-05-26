@@ -17,7 +17,7 @@ MonoBehaviour:
     undeadType: 0
     enemyType: 0
     patterns:
-    - actionId: BasicAttack
+    - actionId: DefaultAction
       maxRange: 1
       relativeTargetOffsets:
       - {x: -1, y: 0}
@@ -55,7 +55,7 @@ MonoBehaviour:
     undeadType: 1
     enemyType: 0
     patterns:
-    - actionId: BasicAttack
+    - actionId: DefaultAction
       maxRange: 1
       relativeTargetOffsets:
       - {x: 0, y: 1}
@@ -97,7 +97,7 @@ MonoBehaviour:
     undeadType: 0
     enemyType: 0
     patterns:
-    - actionId: BasicAttack
+    - actionId: DefaultAction
       maxRange: 1
       relativeTargetOffsets:
       - {x: 0, y: 1}
@@ -114,7 +114,7 @@ MonoBehaviour:
     undeadType: 2
     enemyType: 0
     patterns:
-    - actionId: BasicAttack
+    - actionId: DefaultAction
       maxRange: 2
       relativeTargetOffsets:
       - {x: 0, y: 2}
@@ -168,7 +168,7 @@ MonoBehaviour:
     undeadType: 3
     enemyType: 0
     patterns:
-    - actionId: BasicAttack
+    - actionId: DefaultAction
       maxRange: 2
       relativeTargetOffsets:
       - {x: -2, y: 2}

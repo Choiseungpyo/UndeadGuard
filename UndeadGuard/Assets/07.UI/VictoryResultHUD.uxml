@@ -1,0 +1,76 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/07.UI/VictoryResultHUD.uss?fileID=7433441132597879392&amp;guid=8fe58391119eca5469c887f59c2280f3&amp;type=3#VictoryResultHUD"/>
+    <ui:VisualElement name="VictoryRoot" class="victory-root">
+        <ui:Image name="VictoryBackgroundImage" source="project://database/Assets/09.Download/UI/Victory/Victory_Background.png?fileID=2800000&amp;guid=ab74614f39fc1fd43857c30e864e5afd&amp;type=3#Victory_Background" class="victory-background-image"/>
+        <ui:VisualElement name="VictoryContent" class="victory-content">
+            <ui:VisualElement name="VictoryHeader" class="victory-header">
+                <ui:Image name="VictoryTitleDecoration" source="project://database/Assets/09.Download/UI/Victory/Victory_TitleDecoration.png?fileID=2800000&amp;guid=6e9196d17c44a1342bc375b931d1934d&amp;type=3#Victory_TitleDecoration" class="victory-title-decoration" style="width: 120%; height: 120%; top: -65px; left: -190px;"/>
+                <ui:Label name="VictoryTitleLabel" text="승리" class="victory-title-label"/>
+                <ui:Label name="VictorySubtitleLabel" text="모든 웨이브를 막아냈습니다." class="victory-subtitle-label"/>
+            </ui:VisualElement>
+            <ui:VisualElement name="VictoryBody" class="victory-body">
+                <ui:VisualElement name="BattleRecordPanel" class="victory-panel-wrap battle-record-panel-wrap">
+                    <ui:VisualElement name="BattleRecordPanelImage" class="victory-panel-image" style="width: 130%; height: 103%; top: -11px; left: -75px; background-image: url(&quot;project://database/Assets/09.Download/UI/Victory/Victory_BattleRecordPanel.png?fileID=2800000&amp;guid=218fc873d17ca504c8aa8b4729982895&amp;type=3#Victory_BattleRecordPanel&quot;); background-size: 120% 100%;"/>
+                    <ui:VisualElement class="victory-panel-overlay">
+                        <ui:Label name="BattleRecordTitleLabel" text="전투 기록" class="panel-title-label"/>
+                        <ui:VisualElement class="record-list">
+                            <ui:VisualElement class="record-row">
+                                <ui:Label text="클리어 웨이브" class="record-key"/>
+                                <ui:Label name="ClearedWaveValueLabel" text="0 / 0" class="record-value"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement class="record-row">
+                                <ui:Label text="총 턴" class="record-key"/>
+                                <ui:Label name="TotalTurnsValueLabel" text="0" class="record-value"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement class="record-row">
+                                <ui:Label text="생존 언데드" class="record-key"/>
+                                <ui:Label name="SurvivingUndeadCountValueLabel" text="0" class="record-value"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement class="record-row">
+                                <ui:Label text="잃은 언데드" class="record-key"/>
+                                <ui:Label name="LostUndeadCountValueLabel" text="0" class="record-value"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement class="record-row">
+                                <ui:Label text="처치한 적" class="record-key"/>
+                                <ui:Label name="KilledEnemyCountValueLabel" text="0" class="record-value"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement class="record-row">
+                                <ui:Label text="남은 코어 HP" class="record-key"/>
+                                <ui:Label name="CoreHpValueLabel" text="0 / 0" class="record-value"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement class="record-row">
+                                <ui:Label text="사용한 암흑 에너지" class="record-key"/>
+                                <ui:Label name="UsedDarkEnergyValueLabel" text="0" class="record-value"/>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement name="LegionRecordPanel" class="victory-panel-wrap legion-record-panel-wrap">
+                    <ui:VisualElement name="LegionRecordPanelImage" class="victory-panel-image" style="width: 130%; height: 103%; top: -16px; left: -86px; background-image: url(&quot;project://database/Assets/09.Download/UI/Victory/Victory_BattleRecordPanel.png?fileID=2800000&amp;guid=218fc873d17ca504c8aa8b4729982895&amp;type=3#Victory_BattleRecordPanel&quot;); background-size: 110% 100%;"/>
+                    <ui:VisualElement class="victory-panel-overlay">
+                        <ui:Label name="LegionRecordTitleLabel" text="군단 기록" class="panel-title-label"/>
+                        <ui:VisualElement name="MvpUndeadPanel" class="mvp-undead-wrap">
+                            <ui:VisualElement name="MvpUndeadPanelImage" class="mvp-undead-panel-image" style="width: 112%; height: 136%; top: -38px; left: -20px;"/>
+                            <ui:VisualElement class="mvp-undead-content">
+                                <ui:Label name="MvpTitleLabel" text="최다 처치 언데드" class="mvp-title-label"/>
+                                <ui:VisualElement class="mvp-card-body">
+                                    <ui:Image name="MvpPortrait" class="mvp-portrait"/>
+                                    <ui:VisualElement class="mvp-info">
+                                        <ui:Label name="MvpNameLabel" text="기록 없음" class="mvp-name-label"/>
+                                        <ui:Label name="MvpKillCountLabel" text="0 처치" class="mvp-kill-count-label"/>
+                                    </ui:VisualElement>
+                                </ui:VisualElement>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="VictoryFooter" class="victory-footer">
+                <ui:Button name="LobbyButton" class="lobby-button">
+                    <ui:VisualElement name="LobbyButtonImage" class="lobby-button-image" style="width: 128%; height: 132%; top: -8px; left: -60px; background-image: url(&quot;project://database/Assets/09.Download/UI/Victory/VictoryButton.png?fileID=2800000&amp;guid=3c04a0ce94c1bf94a844d9159f62d4ab&amp;type=3#VictoryButton&quot;); background-size: 100% 100%;"/>
+                    <ui:Label name="LobbyButtonLabel" text="로비로" class="lobby-button-label"/>
+                </ui:Button>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

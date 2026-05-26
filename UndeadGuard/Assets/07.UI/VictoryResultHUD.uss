@@ -1,0 +1,227 @@
+.victory-root {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+.victory-background-image {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+.victory-content {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    padding-top: 42px;
+    padding-right: 76px;
+    padding-bottom: 36px;
+    padding-left: 76px;
+}
+
+.victory-header {
+    position: relative;
+    height: 190px;
+    align-items: center;
+}
+
+.victory-title-decoration {
+    position: absolute;
+}
+
+.victory-title-label {
+    color: rgb(239, 216, 255);
+    font-size: 72px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.victory-subtitle-label {
+    margin-top: 14px;
+    color: rgba(224, 205, 237, 0.94);
+    font-size: 24px;
+    -unity-text-align: middle-center;
+}
+
+.victory-body {
+    position: absolute;
+    left: 76px;
+    right: 76px;
+    top: 234px;
+    bottom: 154px;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.victory-panel-wrap {
+    position: relative;
+    width: 520px;
+    height: 100%;
+}
+
+.victory-panel-image {
+    position: absolute;
+    -unity-background-scale-mode: stretch-to-fill;
+}
+
+.victory-panel-overlay {
+    position: absolute;
+    left: 42px;
+    right: 42px;
+    top: 34px;
+    bottom: 42px;
+    padding-top: 0;
+    padding-right: 0;
+    padding-bottom: 0;
+    padding-left: 0;
+}
+
+.panel-title-label {
+    color: rgb(232, 215, 242);
+    font-size: 34px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.record-list {
+    margin-top: 28px;
+    flex-grow: 1;
+}
+
+.record-row {
+    min-height: 64px;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(151, 100, 187, 0.32);
+}
+
+.record-key {
+    color: rgba(226, 218, 235, 0.88);
+    font-size: 18px;
+}
+
+.record-value {
+    min-width: 156px;
+    color: rgb(246, 240, 252);
+    font-size: 22px;
+    -unity-text-align: middle-right;
+}
+
+.mvp-undead-wrap {
+    position: relative;
+    margin-top: 58px;
+    min-height: 270px;
+}
+
+.mvp-undead-panel-image {
+    position: absolute;
+    -unity-background-scale-mode: stretch-to-fill;
+}
+
+.mvp-undead-content {
+    position: absolute;
+    left: 28px;
+    right: 28px;
+    top: 28px;
+    bottom: 28px;
+    justify-content: center;
+}
+
+.mvp-title-label {
+    color: rgb(212, 139, 235);
+    font-size: 24px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.mvp-card-body {
+    margin-top: 32px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.mvp-portrait {
+    width: 126px;
+    height: 126px;
+    margin-right: 28px;
+    border-top-width: 2px;
+    border-right-width: 2px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+    border-top-color: rgba(220, 160, 245, 0.8);
+    border-right-color: rgba(160, 95, 210, 0.8);
+    border-bottom-color: rgba(105, 55, 155, 0.86);
+    border-left-color: rgba(160, 95, 210, 0.8);
+    background-color: rgba(14, 9, 24, 0.72);
+}
+
+.mvp-info {
+    min-width: 210px;
+    justify-content: center;
+}
+
+.mvp-name-label {
+    color: rgb(248, 241, 252);
+    font-size: 30px;
+    -unity-font-style: bold;
+}
+
+.mvp-kill-count-label {
+    margin-top: 18px;
+    color: rgb(233, 112, 154);
+    font-size: 26px;
+    -unity-font-style: bold;
+}
+
+.victory-footer {
+    position: absolute;
+    left: 76px;
+    right: 76px;
+    bottom: 36px;
+    height: 92px;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.lobby-button {
+    position: relative;
+    width: 300px;
+    height: 84px;
+    padding-top: 0;
+    padding-right: 0;
+    padding-bottom: 0;
+    padding-left: 0;
+    border-top-width: 0;
+    border-right-width: 0;
+    border-bottom-width: 0;
+    border-left-width: 0;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.lobby-button-image {
+    position: absolute;
+    -unity-background-scale-mode: stretch-to-fill;
+}
+
+.lobby-button-label {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    color: rgb(232, 220, 245);
+    font-size: 27px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}

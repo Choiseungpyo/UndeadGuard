@@ -48,6 +48,12 @@ public class DamageHpOverlayUI : MonoBehaviour
     private VisualElement overlayRoot;
     private bool templateWarningLogged;
 
+    private void Awake()
+    {
+        if (targetDocument == null)
+            targetDocument = GetComponent<UIDocument>();
+    }
+
     private void OnEnable()
     {
         EventBus.Instance.Subscribe<DamageTakenEvent>(OnDamageTaken);
@@ -503,12 +509,6 @@ public class DamageHpOverlayUI : MonoBehaviour
     {
         if (overlayRoot != null && overlayRoot.panel != null)
             return true;
-
-        if (targetDocument == null)
-            targetDocument = GetComponent<UIDocument>();
-
-        if (targetDocument == null || targetDocument.rootVisualElement == null)
-            targetDocument = FindFirstObjectByType<UIDocument>();
 
         if (targetDocument == null || targetDocument.rootVisualElement == null)
             return false;

@@ -1,0 +1,80 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/07.UI/GameOverResultHUD.uss?fileID=7433441132597879392&amp;guid=0c3ffc7b3f41f554ba2da1a90c7d48c7&amp;type=3#GameOverResultHUD"/>
+    <ui:VisualElement name="GameOverRoot" class="game-over-root">
+        <ui:Image name="GameOverBackground" source="project://database/Assets/09.Download/UI/GameOver/GameOver_Background.png?fileID=2800000&amp;guid=e37e011b9677c1e43b83fcf50d23e20c&amp;type=3#GameOver_Background" class="game-over-background"/>
+        <ui:VisualElement class="game-over-layout">
+            <ui:VisualElement class="game-over-header">
+                <ui:Image name="TitleDecorationImage" source="project://database/Assets/09.Download/UI/GameOver/GameOver_TitleDecoration.png?fileID=2800000&amp;guid=ec8a53c54ea03b04995c04116b990dbc&amp;type=3#GameOver_TitleDecoration" class="title-decoration-image" style="width: 150%; height: 150%; top: -110px; left: -457px;"/>
+                <ui:Label name="GameOverTitleLabel" text="죽음의 기록" class="game-over-title"/>
+                <ui:Label name="GameOverSubtitleLabel" text="코어가 파괴되었습니다" class="game-over-subtitle"/>
+                <ui:Label name="GameOverDescriptionLabel" text="마지막 방어선이 무너지고, 군주의 전투는 여기서 끝났습니다." class="game-over-description"/>
+            </ui:VisualElement>
+            <ui:VisualElement class="game-over-body">
+                <ui:VisualElement class="result-panel-wrap">
+                    <ui:Image name="BattleRecordPanelImage" source="project://database/Assets/09.Download/UI/GameOver/GameOver_BattleRecordPanel.png?fileID=2800000&amp;guid=818373d549dff934bbce2aa7b5ce603c&amp;type=3#GameOver_BattleRecordPanel" class="result-panel-image" style="width: 130%; height: 130%; top: -70px; bottom: -124px; right: -81px; left: -74px;"/>
+                    <ui:VisualElement class="result-panel-overlay">
+                        <ui:Label text="전투 기록" class="panel-header-label"/>
+                        <ui:VisualElement class="panel-content panel-content-record">
+                            <ui:VisualElement class="record-row">
+                                <ui:Label text="생존 일수" class="record-key"/>
+                                <ui:Label name="SurvivedDayValueLabel" text="0일" class="record-value"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement class="record-row">
+                                <ui:Label text="도달 웨이브" class="record-key"/>
+                                <ui:Label name="ReachedWaveValueLabel" text="0" class="record-value"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement class="record-row">
+                                <ui:Label text="처치한 적" class="record-key"/>
+                                <ui:Label name="KilledEnemyCountValueLabel" text="0" class="record-value"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement class="record-row">
+                                <ui:Label text="잃은 언데드" class="record-key"/>
+                                <ui:Label name="LostUndeadCountValueLabel" text="0" class="record-value"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement class="record-row">
+                                <ui:Label text="부활한 언데드" class="record-key"/>
+                                <ui:Label name="RevivedUndeadCountValueLabel" text="0" class="record-value"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement class="record-row">
+                                <ui:Label text="코어 총 피해" class="record-key"/>
+                                <ui:Label name="TotalCoreDamageTakenValueLabel" text="0" class="record-value"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement class="record-row">
+                                <ui:Label text="마지막 공격자" class="record-key"/>
+                                <ui:Label name="LastAttackerNameValueLabel" text="알 수 없음" class="record-value record-value-accent"/>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="result-panel-wrap">
+                    <ui:Image name="LordEvaluationPanelImage" source="project://database/Assets/09.Download/UI/GameOver/GameOver_LordEvaluationPanel.png?fileID=2800000&amp;guid=96e9fb7322d62944eb453d54163fc9e9&amp;type=3#GameOver_LordEvaluationPanel" class="result-panel-image" style="width: 130%; height: 130%; top: -83px; bottom: -111px; right: -57px; left: -98px;"/>
+                    <ui:VisualElement class="result-panel-overlay">
+                        <ui:Label text="군주의 평가" class="panel-header-label"/>
+                        <ui:VisualElement class="panel-content panel-content-evaluation">
+                            <ui:VisualElement class="evaluation-block">
+                                <ui:Label text="평가 제목" class="evaluation-heading"/>
+                                <ui:Label name="LordEvaluationTitleLabel" text="방어선이 무너졌다" class="evaluation-value evaluation-title-value"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement class="evaluation-divider"/>
+                            <ui:VisualElement class="evaluation-block">
+                                <ui:Label text="평가 설명" class="evaluation-heading"/>
+                                <ui:Label name="LordEvaluationDescriptionLabel" text="적을 막아냈지만 코어를 지키기에는 부족했습니다." class="evaluation-value evaluation-description-value"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement class="evaluation-divider"/>
+                            <ui:VisualElement class="evaluation-block">
+                                <ui:Label text="다음 전투 힌트" class="evaluation-heading"/>
+                                <ui:Label name="LordEvaluationHintLabel" text="전열 방어와 자원 관리에 집중하세요." class="evaluation-value evaluation-hint-value"/>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement class="game-over-footer">
+                <ui:Button name="MainMenuButton" class="result-button main-menu-button" style="width: 302px; height: 106px;">
+                    <ui:Image name="MainMenuButtonImage" source="project://database/Assets/09.Download/UI/GameOver/GameOver_MainMenuButton.png?fileID=2800000&amp;guid=561cf4dbc91051a4fb9c5c39a939ef80&amp;type=3#GameOver_MainMenuButton" class="result-button-image" style="width: 130%; height: 130%; top: 2px; bottom: -33px; right: -43px; left: -47px;"/>
+                    <ui:Label name="MainMenuButtonLabel" text="로비로 이동" class="result-button-label main-menu-button-label"/>
+                </ui:Button>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

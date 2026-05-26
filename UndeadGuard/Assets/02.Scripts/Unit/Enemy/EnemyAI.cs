@@ -38,22 +38,79 @@ public class EnemyAI : MonoBehaviour
 
     public IEnumerator ExecuteMove(List<UnitBase> allUnits)
     {
-        if (unit == null || unit.IsDead)
+        if (!TryCreateMovePlan(allUnits, null, out EnemyMovePlan plan))
             yield break;
+
+        yield return StartCoroutine(ExecuteMovePlan(plan));
+    }
+
+    public bool TryCreateMovePlan(
+        IReadOnlyList<UnitBase> allUnits,
+        ISet<Vector2Int> reservedDestinations,
+        out EnemyMovePlan plan)
+    {
+        plan = null;
+        if (unit == null || unit.IsDead || allUnits == null)
+            return false;
+
+        // Taunt has the highest movement priority: pursue taunt source first.
+        if (unit.IsTaunted && unit.TauntSource != null && !unit.TauntSource.IsDead)
+        {
+            UnitBase tauntTarget = unit.TauntSource;
+            if (IsTargetInBasicRange(tauntTarget.GridPosition))
+                return false;
+
+            if (TryGetNearestReachableAttackPath(tauntTarget.GridPosition, reservedDestinations, out List<Vector2Int> tauntPath))
+            {
+                Vector2Int tauntDestination = tauntPath[tauntPath.Count - 1];
+                plan = new EnemyMovePlan(
+                    this,
+                    unit,
+                    tauntTarget,
+                    tauntTarget.transform,
+                    tauntDestination,
+                    tauntPath);
+                return true;
+            }
+
+            return false;
+        }
 
         if (HasAttackableTargetInRange(allUnits))
+            return false;
+
+        if (!TryGetClosestMovementTargetPath(
+                allUnits,
+                reservedDestinations,
+                out object targetKey,
+                out Transform targetTransform,
+                out List<Vector2Int> path))
+            return false;
+
+        Vector2Int destination = path[path.Count - 1];
+        plan = new EnemyMovePlan(
+            this,
+            unit,
+            targetKey,
+            targetTransform,
+            destination,
+            path);
+        return true;
+    }
+
+    public IEnumerator ExecuteMovePlan(EnemyMovePlan plan)
+    {
+        if (plan == null || unit == null || unit.IsDead)
             yield break;
 
-        Vector2Int targetPos = GetTargetGridPosition(allUnits);
-        if (targetPos == unit.GridPosition)
+        if (plan.EnemyAI != this || plan.MovingUnit != unit)
             yield break;
 
-        List<Vector2Int> path = Pathfinder.FindPath(unit.GridPosition, targetPos, GridManager.Instance, unit);
-        if (path.Count <= 1)
+        List<Vector2Int> path = plan.Path;
+        if (path == null || path.Count <= 1)
             yield break;
 
-        int steps = Mathf.Min(unit.Stats.MoveRange, path.Count - 1);
-        yield return StartCoroutine(unit.MoveAlongPath(path.GetRange(0, steps + 1)));
+        yield return StartCoroutine(unit.MoveAlongPath(path));
     }
 
     public bool ExecuteAttack(List<UnitBase> allUnits)
@@ -61,35 +118,106 @@ public class EnemyAI : MonoBehaviour
         if (unit == null || unit.IsDead)
             return false;
 
+        if (!TryCreateAttackPlan(allUnits, out EnemyAttackPlan plan))
+        {
+            HandleNoAttackSideEffects();
+            return false;
+        }
+
+        return ExecuteAttackPlan(plan);
+    }
+
+    public void HandleNoAttackSideEffects()
+    {
+        if (unit == null || unit.IsDead)
+            return;
+
+        unit.DecrementTaunt();
+    }
+
+    public bool TryCreateAttackPlan(IReadOnlyList<UnitBase> allUnits, out EnemyAttackPlan plan)
+    {
+        plan = null;
+        if (unit == null || unit.IsDead)
+            return false;
+
         if (unit.IsTaunted && unit.TauntSource != null && !unit.TauntSource.IsDead)
         {
-            if (IsTargetInBasicRange(unit.TauntSource.GridPosition))
+            UnitBase tauntTarget = unit.TauntSource;
+            if (IsTargetInBasicRange(tauntTarget.GridPosition))
             {
-                unit.PerformAttack(unit.TauntSource);
-                unit.DecrementTaunt();
+                plan = new EnemyAttackPlan(
+                    this,
+                    unit,
+                    tauntTarget,
+                    tauntTarget.transform,
+                    isCoreTarget: false,
+                    consumeTauntOnSuccess: true);
                 return true;
             }
         }
 
-        if (IsCoreInRange())
+        if (TryGetCoreTargetInRange(out CoreHealth coreTarget))
         {
-            PerformCoreAttack();
+            plan = new EnemyAttackPlan(
+                this,
+                unit,
+                coreTarget,
+                coreTarget.transform,
+                isCoreTarget: true,
+                consumeTauntOnSuccess: false);
             return true;
         }
 
         UnitBase attackTarget = FindAttackTargetInRange(allUnits);
-        if (attackTarget != null)
+        if (attackTarget == null || attackTarget.IsDead)
+            return false;
+
+        plan = new EnemyAttackPlan(
+            this,
+            unit,
+            attackTarget,
+            attackTarget.transform,
+            isCoreTarget: false,
+            consumeTauntOnSuccess: true);
+        return true;
+    }
+
+    public bool ExecuteAttackPlan(EnemyAttackPlan plan)
+    {
+        if (plan == null || unit == null || unit.IsDead)
+            return false;
+
+        if (plan.EnemyAI != this)
+            return false;
+
+        if (plan.IsCoreTarget)
         {
-            unit.PerformAttack(attackTarget);
-            unit.DecrementTaunt();
+            CoreHealth coreTarget = plan.Target as CoreHealth;
+            if (coreTarget == null || coreTarget.IsDead)
+                return false;
+
+            PerformCoreAttack(coreTarget);
             return true;
         }
 
-        unit.DecrementTaunt();
-        return false;
+        UnitBase targetUnit = plan.Target as UnitBase;
+        if (targetUnit == null || targetUnit.IsDead)
+        {
+            if (plan.ConsumeTauntOnSuccess)
+                unit.DecrementTaunt();
+            return false;
+        }
+
+        unit.PerformAttack(targetUnit);
+
+        if (plan.ConsumeTauntOnSuccess)
+            unit.DecrementTaunt();
+
+        return true;
     }
 
-    private bool HasAttackableTargetInRange(List<UnitBase> allUnits)
+    private bool HasAttackableTargetInRange(IReadOnlyList<UnitBase> allUnits)
     {
         if (unit == null)
             return false;
@@ -100,7 +228,7 @@ public class EnemyAI : MonoBehaviour
                 return true;
         }
 
-        if (IsCoreInRange())
+        if (TryGetCoreTargetInRange(out _))
             return true;
 
         if (FindAttackTargetInRange(allUnits) != null)
@@ -112,47 +240,59 @@ public class EnemyAI : MonoBehaviour
     private bool TryGetClosestMovementTargetPosition(List<UnitBase> allUnits, out Vector2Int result)
     {
         result = unit.GridPosition;
-
-        List<Vector2Int> candidateTargets = new List<Vector2Int>();
-
-        foreach (UnitBase u in allUnits)
-        {
-            if (u == null || u.Team != TeamType.Undead || u.IsDead)
-                continue;
-
-            candidateTargets.Add(u.GridPosition);
-        }
-
-        var coreCells = GridManager.Instance.MapDefinition.GetPositions(StructureType.Core);
-        for (int i = 0; i < coreCells.Count; i++)
-            candidateTargets.Add(coreCells[i]);
-
         int bestPathLength = int.MaxValue;
+        bool bestIsCore = false;
         bool found = false;
 
-        for (int i = 0; i < candidateTargets.Count; i++)
+        for (int i = 0; i < allUnits.Count; i++)
         {
-            Vector2Int target = candidateTargets[i];
+            UnitBase candidateUnit = allUnits[i];
+            if (candidateUnit == null || candidateUnit.Team != TeamType.Undead || candidateUnit.IsDead)
+                continue;
 
-            if (!TryGetNearestReachableAttackPosition(target, out var attackPos))
+            if (!TryGetNearestReachableAttackPosition(candidateUnit.GridPosition, out Vector2Int attackPos))
                 continue;
 
             List<Vector2Int> path = Pathfinder.FindPath(unit.GridPosition, attackPos, GridManager.Instance, unit);
             if (path.Count == 0)
                 continue;
 
-            if (path.Count < bestPathLength)
-            {
-                bestPathLength = path.Count;
-                result = attackPos;
-                found = true;
-            }
+            bool isBetter = path.Count < bestPathLength;
+            if (!isBetter)
+                continue;
+
+            bestPathLength = path.Count;
+            bestIsCore = false;
+            result = attackPos;
+            found = true;
+        }
+
+        var coreCells = GridManager.Instance.MapDefinition.GetPositions(StructureType.Core);
+        for (int i = 0; i < coreCells.Count; i++)
+        {
+            Vector2Int coreCell = coreCells[i];
+            if (!TryGetNearestReachableAttackPosition(coreCell, out Vector2Int attackPos))
+                continue;
+
+            List<Vector2Int> path = Pathfinder.FindPath(unit.GridPosition, attackPos, GridManager.Instance, unit);
+            if (path.Count == 0)
+                continue;
+
+            bool isBetter = path.Count < bestPathLength
+                || (path.Count == bestPathLength && !bestIsCore);
+            if (!isBetter)
+                continue;
+
+            bestPathLength = path.Count;
+            bestIsCore = true;
+            result = attackPos;
+            found = true;
         }
 
         return found;
     }
 
-    private UnitBase FindAttackTargetInRange(List<UnitBase> allUnits)
+    private UnitBase FindAttackTargetInRange(IReadOnlyList<UnitBase> allUnits)
     {
         UnitBase nearest = null;
         int minDist = int.MaxValue;
@@ -176,7 +316,7 @@ public class EnemyAI : MonoBehaviour
         return nearest;
     }
 
-    private void PerformCoreAttack()
+    private void PerformCoreAttack(CoreHealth coreTarget)
     {
         Vector2Int effectTarget = unit.GridPosition;
         var coreCells = GridManager.Instance.MapDefinition.GetPositions(StructureType.Core);
@@ -200,11 +340,10 @@ public class EnemyAI : MonoBehaviour
         }
 
         unit.UnitAnimator?.TriggerAttack();
-        AttackEffectService.Play(unit, effectTarget, AttackActionIds.BasicAttack);
+        AttackEffectService.Play(unit, effectTarget, UnitActionIds.DefaultAction);
 
-        CoreHealth coreHealth = FindFirstObjectByType<CoreHealth>();
-        if (coreHealth != null)
-            coreHealth.TakeDamage(unit.Stats.PhysicalAttack);
+        if (coreTarget != null && !coreTarget.IsDead)
+            coreTarget.TakeDamage(unit.Stats.PhysicalAttack, unit != null ? unit.name : null);
     }
 
     private bool TryGetNearestReachableAttackPosition(Vector2Int targetPos, out Vector2Int result)
@@ -214,7 +353,7 @@ public class EnemyAI : MonoBehaviour
         List<Vector2Int> candidates = AttackPatternResolver.GetAttackOriginCandidates(
             unit,
             targetPos,
-            AttackActionIds.BasicAttack,
+            UnitActionIds.DefaultAction,
             unit.Stats.AttackRange);
 
         if (candidates.Count == 0)
@@ -251,13 +390,156 @@ public class EnemyAI : MonoBehaviour
         return found;
     }
 
-    private bool IsCoreInRange()
+    private bool TryGetClosestMovementTargetPath(
+        IReadOnlyList<UnitBase> allUnits,
+        ISet<Vector2Int> reservedDestinations,
+        out object targetKey,
+        out Transform targetTransform,
+        out List<Vector2Int> path)
     {
+        targetKey = null;
+        targetTransform = null;
+        path = null;
+        int bestTargetDistance = int.MaxValue;
+        bool bestIsCore = false;
+        for (int i = 0; i < allUnits.Count; i++)
+        {
+            UnitBase candidateUnit = allUnits[i];
+            if (candidateUnit == null || candidateUnit.Team != TeamType.Undead || candidateUnit.IsDead)
+                continue;
+
+            if (!TryGetNearestReachableAttackPath(
+                    candidateUnit.GridPosition,
+                    reservedDestinations,
+                    out List<Vector2Int> candidatePath,
+                    out int candidateDistance))
+                continue;
+
+            bool isBetter = candidateDistance < bestTargetDistance;
+            if (!isBetter)
+                continue;
+
+            bestTargetDistance = candidateDistance;
+            bestIsCore = false;
+            path = candidatePath;
+            targetKey = candidateUnit;
+            targetTransform = candidateUnit.transform;
+        }
+
+        CoreHealth coreTarget = CoreHealth.Instance;
+        if (coreTarget != null && !coreTarget.IsDead)
+        {
+            var coreCells = GridManager.Instance.MapDefinition.GetPositions(StructureType.Core);
+            for (int i = 0; i < coreCells.Count; i++)
+            {
+                if (!TryGetNearestReachableAttackPath(
+                        coreCells[i],
+                        reservedDestinations,
+                        out List<Vector2Int> candidatePath,
+                        out int candidateDistance))
+                    continue;
+
+                bool isBetter = candidateDistance < bestTargetDistance
+                    || (candidateDistance == bestTargetDistance && !bestIsCore);
+                if (!isBetter)
+                    continue;
+
+                bestTargetDistance = candidateDistance;
+                bestIsCore = true;
+                path = candidatePath;
+                targetKey = coreTarget;
+                targetTransform = coreTarget.transform;
+            }
+        }
+
+        return path != null && path.Count > 1;
+    }
+
+    private bool TryGetNearestReachableAttackPath(
+        Vector2Int targetPos,
+        ISet<Vector2Int> reservedDestinations,
+        out List<Vector2Int> movePath)
+    {
+        return TryGetNearestReachableAttackPath(targetPos, reservedDestinations, out movePath, out _);
+    }
+
+    private bool TryGetNearestReachableAttackPath(
+        Vector2Int targetPos,
+        ISet<Vector2Int> reservedDestinations,
+        out List<Vector2Int> movePath,
+        out int totalPathLength)
+    {
+        movePath = null;
+        totalPathLength = int.MaxValue;
+
+        List<Vector2Int> candidates = AttackPatternResolver.GetAttackOriginCandidates(
+            unit,
+            targetPos,
+            UnitActionIds.DefaultAction,
+            unit.Stats.AttackRange);
+
+        if (candidates.Count == 0)
+            return false;
+
+        int bestProgressDistance = int.MaxValue;
+        int bestPathLength = int.MaxValue;
+
+        for (int i = 0; i < candidates.Count; i++)
+        {
+            Vector2Int candidate = candidates[i];
+            List<Vector2Int> fullPath;
+
+            if (candidate == unit.GridPosition)
+            {
+                fullPath = new List<Vector2Int> { unit.GridPosition };
+            }
+            else
+            {
+                if (!GridManager.Instance.IsWalkableIgnoring(candidate, unit))
+                    continue;
+
+                fullPath = Pathfinder.FindPath(unit.GridPosition, candidate, GridManager.Instance, unit);
+                if (fullPath.Count == 0)
+                    continue;
+            }
+
+            int steps = Mathf.Min(unit.Stats.MoveRange, fullPath.Count - 1);
+            if (steps <= 0)
+                continue;
+
+            Vector2Int destination = fullPath[steps];
+            if (reservedDestinations != null && reservedDestinations.Contains(destination))
+                continue;
+
+            int progressDistance = Manhattan(destination, targetPos);
+            if (progressDistance < bestProgressDistance
+                || (progressDistance == bestProgressDistance && fullPath.Count < bestPathLength))
+            {
+                bestProgressDistance = progressDistance;
+                bestPathLength = fullPath.Count;
+                movePath = fullPath.GetRange(0, steps + 1);
+                totalPathLength = fullPath.Count;
+            }
+        }
+
+        return movePath != null && movePath.Count > 1;
+    }
+
+    private bool TryGetCoreTargetInRange(out CoreHealth coreTarget)
+    {
+        coreTarget = null;
+        CoreHealth foundCore = CoreHealth.Instance;
+        if (foundCore == null || foundCore.IsDead)
+            return false;
+
         var coreCells = GridManager.Instance.MapDefinition.GetPositions(StructureType.Core);
         for (int i = 0; i < coreCells.Count; i++)
         {
             if (IsTargetInBasicRange(coreCells[i]))
+            {
+                coreTarget = foundCore;
                 return true;
+            }
         }
 
         return false;
@@ -268,7 +550,7 @@ public class EnemyAI : MonoBehaviour
         return AttackPatternResolver.IsTargetInRange(
             unit,
             targetGrid,
-            AttackActionIds.BasicAttack,
+            UnitActionIds.DefaultAction,
             unit.Stats.AttackRange);
     }
 

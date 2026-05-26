@@ -1,0 +1,78 @@
+﻿.title-root {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    flex-grow: 1;
+}
+
+.title-background {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-image: url("project://database/Assets/09.Download/UI/Title/Title.png?fileID=21300000&guid=04e594b241cbeeb4a84b92ec1c3bcfe1&type=3");
+    -unity-background-scale-mode: scale-and-crop;
+    background-position-x: 50%;
+    background-position-y: 50%;
+}
+
+.title-fade {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.24);
+}
+
+.title-foreground {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 24px;
+    padding-bottom: 0;
+}
+
+.title-logo {
+    width: 1280px;
+    height: 290px;
+    margin-top: 8px;
+    background-image: url("project://database/Assets/09.Download/UI/Title/Logo.png?fileID=21300000&guid=8e3a5fed2d4b9ac4685514d77f04bac0&type=3");
+    -unity-background-scale-mode: scale-to-fit;
+    background-position-x: 50%;
+    background-position-y: 50%;
+}
+
+.press-panel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 84px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 900px;
+    height: 210px;
+    align-items: center;
+    justify-content: center;
+    padding-top: 2px;
+    background-image: url("project://database/Assets/09.Download/UI/Title/PressAnyKeyButton.png?fileID=21300000&guid=0fae9fb13d2ba0747a8800ad82994386&type=3");
+    -unity-background-scale-mode: scale-to-fit;
+    background-position-x: 50%;
+    background-position-y: 50%;
+}
+
+.press-text {
+    width: 100%;
+    color: rgb(245, 245, 245);
+    font-size: 48px;
+    letter-spacing: 3px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}

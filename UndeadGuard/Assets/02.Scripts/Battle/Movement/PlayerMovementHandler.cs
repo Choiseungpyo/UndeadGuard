@@ -18,8 +18,7 @@ public class PlayerMovementHandler : MonoBehaviour
         EventBus.Instance.Subscribe<UnitDeselectedEvent>(OnUnitDeselected);
         EventBus.Instance.Subscribe<TileClickedEvent>(OnTileClicked);
         EventBus.Instance.Subscribe<TurnChangedEvent>(OnTurnChanged);
-        EventBus.Instance.Subscribe<AttackModeRequestedEvent>(OnAttackModeRequested);
-        EventBus.Instance.Subscribe<SkillModeRequestedEvent>(OnSkillModeRequested);
+        EventBus.Instance.Subscribe<ActionModeRequestedEvent>(OnActionModeRequested);
     }
 
     private void OnDestroy()
@@ -28,8 +27,7 @@ public class PlayerMovementHandler : MonoBehaviour
         EventBus.Instance.Unsubscribe<UnitDeselectedEvent>(OnUnitDeselected);
         EventBus.Instance.Unsubscribe<TileClickedEvent>(OnTileClicked);
         EventBus.Instance.Unsubscribe<TurnChangedEvent>(OnTurnChanged);
-        EventBus.Instance.Unsubscribe<AttackModeRequestedEvent>(OnAttackModeRequested);
-        EventBus.Instance.Unsubscribe<SkillModeRequestedEvent>(OnSkillModeRequested);
+        EventBus.Instance.Unsubscribe<ActionModeRequestedEvent>(OnActionModeRequested);
     }
 
     private void Update()
@@ -62,19 +60,7 @@ public class PlayerMovementHandler : MonoBehaviour
         }
     }
 
-    private void OnAttackModeRequested(AttackModeRequestedEvent e)
-    {
-        if (selectedUnit == null) return;
-        if (isMoving) return;
-
-        GridHighlighter.Instance.ClearMovable();
-        GridHighlighter.Instance.ClearPath();
-        movablePositions.Clear();
-
-        enabled = false;
-    }
-
-    private void OnSkillModeRequested(SkillModeRequestedEvent e)
+    private void OnActionModeRequested(ActionModeRequestedEvent e)
     {
         if (selectedUnit == null) return;
         if (isMoving) return;
@@ -88,7 +74,9 @@ public class PlayerMovementHandler : MonoBehaviour
 
     private void OnUnitSelected(UnitSelectedEvent e)
     {
-        if (GameStageController.Instance.CurrentStage != StageType.Battle) return;
+        GameStageController stageController = GameStageController.Instance;
+        if (stageController == null) return;
+        if (stageController.CurrentStage != StageType.Battle) return;
         if (e.Unit.Team != TeamType.Undead) return;
 
         selectedUnit = e.Unit;
@@ -144,6 +132,9 @@ public class PlayerMovementHandler : MonoBehaviour
                 EventBus.Instance.Publish(new UnitDeselectedEvent());
             return;
         }
+
+        if (TutorialManager.Instance != null && !TutorialManager.Instance.CanMoveTo(e.GridPosition))
+            return;
 
         if (selectedUnit.HasMoved) return;
 

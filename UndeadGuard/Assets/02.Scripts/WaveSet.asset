@@ -13,33 +13,17 @@ MonoBehaviour:
   m_Name: WaveSet
   m_EditorClassIdentifier: Assembly-CSharp::WaveSet
   waves:
-  - darkEnergyReward: 3
+  - darkEnergyReward: 100
+    approachDirection: 4
     spawnEntries:
     - enemyType: 0
-      spawnPosition: {x: 0, y: 6}
+      spawnPosition: {x: 0, y: 5}
     - enemyType: 0
       spawnPosition: {x: 0, y: 3}
-  - darkEnergyReward: 5
+  - darkEnergyReward: 200
+    approachDirection: 1
     spawnEntries:
     - enemyType: 0
       spawnPosition: {x: 3, y: 9}
     - enemyType: 0
       spawnPosition: {x: 4, y: 9}
-    - enemyType: 0
-      spawnPosition: {x: 5, y: 9}
-    - enemyType: 0
-      spawnPosition: {x: 6, y: 9}
-  - darkEnergyReward: 3
-    spawnEntries:
-    - enemyType: 0
-      spawnPosition: {x: 9, y: 5}
-    - enemyType: 0
-      spawnPosition: {x: 9, y: 4}
-    - enemyType: 0
-      spawnPosition: {x: 9, y: 9}
-    - enemyType: 0
-      spawnPosition: {x: 9, y: 8}
-    - enemyType: 0
-      spawnPosition: {x: 9, y: 0}
-    - enemyType: 0
-      spawnPosition: {x: 9, y: 1}

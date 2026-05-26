@@ -117,7 +117,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Zombie
   team: 1
   stats:
-    maxHp: 100
+    maxHp: 1
     physicalAttack: 1
     magicAttack: 1
     defensePower: 0

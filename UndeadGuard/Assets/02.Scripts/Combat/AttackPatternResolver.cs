@@ -134,10 +134,10 @@ public static class AttackPatternResolver
                     continue;
 
                 string id = string.IsNullOrWhiteSpace(entry.ActionId)
-                    ? AttackActionIds.BasicAttack
+                    ? UnitActionIds.DefaultAction
                     : entry.ActionId.Trim();
 
-                if (!string.Equals(id, AttackActionIds.BasicAttack, System.StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(id, UnitActionIds.DefaultAction, System.StringComparison.OrdinalIgnoreCase))
                 {
                     actionId = id;
                     return true;

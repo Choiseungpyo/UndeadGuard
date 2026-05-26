@@ -1,0 +1,11 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/07.UI/TutorialHUD.uss" />
+    <ui:VisualElement name="TutorialRoot" class="tutorial-root" picking-mode="Ignore">
+        <ui:VisualElement name="TutorialDimOverlay" class="tutorial-dim-overlay" picking-mode="Ignore" />
+        <ui:VisualElement name="TutorialTargetFrame" class="tutorial-target-frame" picking-mode="Ignore" />
+        <ui:VisualElement name="TutorialMessagePanel" class="tutorial-message-panel" picking-mode="Position">
+            <ui:Label text="" name="TutorialMessageLabel" class="tutorial-message-label" />
+            <ui:Button text="&#xB2E4;&#xC74C;" name="TutorialNextButton" class="tutorial-next-button" picking-mode="Position" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

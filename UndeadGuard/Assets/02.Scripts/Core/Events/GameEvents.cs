@@ -21,6 +21,19 @@ public class UnitAttackedEvent
     public int Damage;
 }
 
+public class AttackModeRequestedEvent
+{
+    public UnitBase Unit;
+    public IUnitAction Action;
+}
+
+public class AttackCompletedEvent
+{
+    public UnitBase Attacker;
+    public UnitBase Target;
+    public Vector2Int TargetPosition;
+}
+
 public class DamageTakenEvent
 {
     public IDamageable Target;
@@ -41,6 +54,14 @@ public class TurnChangedEvent
     public TurnType CurrentTurn;
 }
 
+public class TurnEndedEvent
+{
+    public TurnType EndedTurn;
+    public TurnType NextTurn;
+}
+
+public class PlayerTurnStartedEvent { }
+
 public class WaveStartedEvent
 {
     public int WaveNumber;
@@ -50,6 +71,37 @@ public class WaveStartedEvent
 public class WaveClearedEvent
 {
     public int WaveNumber;
+    public int DarkEnergyReward;
+}
+
+public class WaveClearRewardFinishedEvent
+{
+    public int WaveNumber;
+}
+
+public class ActionCameraFlowFinishedEvent { }
+
+public class EnemyTurnFinishedEvent { }
+
+public class BattleWonEvent
+{
+    public int ClearedWaveNumber;
+    public int TotalWaves;
+}
+
+public class VictoryEvent
+{
+    public int ClearedWaveNumber;
+    public int TotalWaves;
+}
+
+public class TutorialStepChangedEvent
+{
+    public TutorialStep Step;
+    public string Message;
+    public UnitBase TargetUnit;
+    public bool HasTargetGridPosition;
+    public Vector2Int TargetGridPosition;
 }
 
 public class ResourceChangedEvent
@@ -68,6 +120,12 @@ public class EnemyDiedEvent
 {
     public EnemyUnit Unit;
     public int DarkEnergyReward;
+    public Vector3 WorldPosition;
+}
+
+public class EnemyKillRewardAbsorbedEvent
+{
+    public EnemyUnit Unit;
 }
 
 public class TileClickedEvent
@@ -85,14 +143,11 @@ public class UnitMoveFinishedEvent
     public UnitBase Unit;
 }
 
-public class AttackRequestedEvent
+public class ActionModeRequestedEvent
 {
-    public UnitBase Target;
+    public UnitBase Unit;
+    public IUnitAction Action;
 }
-
-public class AttackModeRequestedEvent { }
-
-public class SkillModeRequestedEvent { }
 
 public class CoreHealthChangedEvent
 {
@@ -100,7 +155,21 @@ public class CoreHealthChangedEvent
     public int MaxHp;
 }
 
-public class CoreDestroyedEvent { }
+public class CoreDamagedEvent
+{
+    public CoreHealth Core;
+    public int DamageAmount;
+    public int CurrentHp;
+    public int MaxHp;
+    public string AttackerName;
+}
+
+public class CoreDestroyedEvent
+{
+    public CoreHealth Core;
+    public MonoBehaviour CoreBehaviour;
+    public Vector3 WorldPosition;
+}
 
 public class StageChangedEvent
 {
@@ -151,5 +220,38 @@ public class GameProgressUpdatedEvent
     public bool IsPreparationStage;
 }
 
+public class RequestOpenTitleEvent
+{
+    public string SceneName;
+}
 
+public class RequestPlayIntroCutsceneEvent
+{
+    public string SceneName;
+}
 
+public class RequestOpenLobbyEvent
+{
+    public string SceneName;
+}
+
+public class RequestStartBattleEvent
+{
+    public string SceneName;
+}
+
+public class RequestRestartBattleEvent
+{
+    public string SceneName;
+}
+
+public class RequestOpenResultEvent
+{
+    public string SceneName;
+    public GameOverResultData ResultData;
+}
+
+public class RequestOpenSettingsEvent
+{
+    public string SceneName;
+}

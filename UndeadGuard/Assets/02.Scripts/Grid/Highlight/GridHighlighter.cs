@@ -10,8 +10,7 @@ public class GridHighlighter : Singleton<GridHighlighter>
 
     [SerializeField] private Color movableColor    = new Color(0.2f, 0.6f, 1f,   0.5f);
     [SerializeField] private Color pathColor       = new Color(1f,   0.8f, 0.2f, 0.65f);
-    [SerializeField] private Color attackableColor = new Color(1f,   0.2f, 0.2f, 0.6f);
-    [SerializeField] private Color skillRangeColor = new Color(0.8f, 0.2f, 1f,   0.5f);
+    [SerializeField] private Color actionRangeColor = new Color(0.8f, 0.2f, 1f,   0.5f);
     [SerializeField] private Color enemySpawnColor = new Color(1f,   0.55f,0.1f, 0.5f);
 
     // 단일 공유 풀
@@ -24,8 +23,7 @@ public class GridHighlighter : Singleton<GridHighlighter>
     private readonly List<Vector2Int> currentPathPositions = new List<Vector2Int>();
 
     // 공격/스킬/스폰 타입별 활성 목록
-    private readonly List<GameObject> attackableActive = new List<GameObject>();
-    private readonly List<GameObject> skillRangeActive = new List<GameObject>();
+    private readonly List<GameObject> actionRangeActive = new List<GameObject>();
     private readonly List<GameObject> enemySpawnActive = new List<GameObject>();
 
     #region Move
@@ -85,44 +83,23 @@ public class GridHighlighter : Singleton<GridHighlighter>
 
     #endregion
 
-    #region Attack
+    #region Action Range
 
-    public void ShowAttackable(List<Vector2Int> positions)
+    public void ShowActionRange(List<Vector2Int> positions)
     {
-        ClearAttackable();
+        ClearActionRange();
         foreach (var pos in positions)
         {
-            var obj = Rent(attackableColor);
+            var obj = Rent(actionRangeColor);
             obj.transform.position = GridManager.Instance.GridToWorld(pos) + Vector3.up * highlightY;
             obj.SetActive(true);
-            attackableActive.Add(obj);
+            actionRangeActive.Add(obj);
         }
     }
 
-    public void ClearAttackable()
+    public void ClearActionRange()
     {
-        Return(attackableActive);
-    }
-
-    #endregion
-
-    #region Skill
-
-    public void ShowSkillRange(List<Vector2Int> positions)
-    {
-        ClearSkillRange();
-        foreach (var pos in positions)
-        {
-            var obj = Rent(skillRangeColor);
-            obj.transform.position = GridManager.Instance.GridToWorld(pos) + Vector3.up * highlightY;
-            obj.SetActive(true);
-            skillRangeActive.Add(obj);
-        }
-    }
-
-    public void ClearSkillRange()
-    {
-        Return(skillRangeActive);
+        Return(actionRangeActive);
     }
 
     #endregion
@@ -153,8 +130,7 @@ public class GridHighlighter : Singleton<GridHighlighter>
     public void ClearAll()
     {
         ClearMovable();
-        ClearAttackable();
-        ClearSkillRange();
+        ClearActionRange();
         ClearEnemySpawnZones();
     }
 

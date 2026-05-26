@@ -23,6 +23,9 @@ public class PhaseHeaderHUD : MonoBehaviour
     private Label darkEnergyLabel;
     private Label phaseSubInfoLabel;
     private Button phaseEndButton;
+    private UIDocument uiDocument;
+    private TurnType currentTurn = TurnType.Player;
+    private int activeUndeadMoveCount;
 
     private StageType CurrentStage;
     private int currentDarkEnergy;
@@ -36,12 +39,14 @@ public class PhaseHeaderHUD : MonoBehaviour
             ? GameStageController.Instance.CurrentStage
             : StageType.Preparation;
 
-        UIDocument uiDocument = GetComponent<UIDocument>();
+        uiDocument = GetComponent<UIDocument>();
         if (uiDocument == null)
         {
             Debug.LogError("UIDocument is null");
             return;
         }
+
+        BattleInputGuard.Instance.RegisterDocument(uiDocument);
 
         VisualElement root = uiDocument.rootVisualElement;
 
@@ -61,6 +66,9 @@ public class PhaseHeaderHUD : MonoBehaviour
         EventBus.Instance.Subscribe<ResourceChangedEvent>(OnResourceChanged);
         EventBus.Instance.Subscribe<CoreHealthChangedEvent>(OnCoreHealthChanged);
         EventBus.Instance.Subscribe<WaveStartedEvent>(OnWaveStarted);
+        EventBus.Instance.Subscribe<UnitMoveStartedEvent>(OnUnitMoveStarted);
+        EventBus.Instance.Subscribe<UnitMoveFinishedEvent>(OnUnitMoveFinished);
+        EventBus.Instance.Subscribe<TutorialStepChangedEvent>(OnTutorialStepChanged);
 
         CacheInitialValues();
         RefreshAll();
@@ -71,11 +79,20 @@ public class PhaseHeaderHUD : MonoBehaviour
         if (phaseEndButton != null)
             phaseEndButton.UnregisterCallback<ClickEvent>(OnPhaseEndClicked);
 
+        if (uiDocument != null)
+        {
+            if (BattleInputGuard.TryGetExisting(out var guard))
+                guard.UnregisterDocument(uiDocument);
+        }
+
         EventBus.Instance.Unsubscribe<StageChangedEvent>(OnStageChanged);
         EventBus.Instance.Unsubscribe<TurnChangedEvent>(OnTurnChanged);
         EventBus.Instance.Unsubscribe<ResourceChangedEvent>(OnResourceChanged);
         EventBus.Instance.Unsubscribe<CoreHealthChangedEvent>(OnCoreHealthChanged);
         EventBus.Instance.Unsubscribe<WaveStartedEvent>(OnWaveStarted);
+        EventBus.Instance.Unsubscribe<UnitMoveStartedEvent>(OnUnitMoveStarted);
+        EventBus.Instance.Unsubscribe<UnitMoveFinishedEvent>(OnUnitMoveFinished);
+        EventBus.Instance.Unsubscribe<TutorialStepChangedEvent>(OnTutorialStepChanged);
     }
 
     private void CacheInitialValues()
@@ -96,18 +113,47 @@ public class PhaseHeaderHUD : MonoBehaviour
     private void OnStageChanged(StageChangedEvent e)
     {
         CurrentStage = e.CurrentStage;
+        if (CurrentStage != StageType.Battle)
+            activeUndeadMoveCount = 0;
+
         RefreshAll();
     }
 
     private void OnTurnChanged(TurnChangedEvent e)
     {
+        currentTurn = e.CurrentTurn;
+
         if (CurrentStage != StageType.Battle)
             return;
 
-        if (phaseEndButton != null)
-            phaseEndButton.SetEnabled(e.CurrentTurn == TurnType.Player);
+        if (e.CurrentTurn != TurnType.Player)
+            activeUndeadMoveCount = 0;
 
         RefreshBattleHeader();
+    }
+
+    private void OnUnitMoveStarted(UnitMoveStartedEvent e)
+    {
+        if (CurrentStage != StageType.Battle || currentTurn != TurnType.Player)
+            return;
+
+        if (e.Unit == null || e.Unit.Team != TeamType.Undead)
+            return;
+
+        activeUndeadMoveCount++;
+        RefreshEndTurnButtonInteractable();
+    }
+
+    private void OnUnitMoveFinished(UnitMoveFinishedEvent e)
+    {
+        if (CurrentStage != StageType.Battle || currentTurn != TurnType.Player)
+            return;
+
+        if (e.Unit == null || e.Unit.Team != TeamType.Undead)
+            return;
+
+        activeUndeadMoveCount = Mathf.Max(0, activeUndeadMoveCount - 1);
+        RefreshEndTurnButtonInteractable();
     }
 
     private void OnResourceChanged(ResourceChangedEvent e)
@@ -131,10 +177,18 @@ public class PhaseHeaderHUD : MonoBehaviour
         RefreshAll();
     }
 
+    private void OnTutorialStepChanged(TutorialStepChangedEvent e)
+    {
+        RefreshEndTurnButtonInteractable();
+    }
+
     private void OnPhaseEndClicked(ClickEvent e)
     {
         if (CurrentStage == StageType.Preparation)
         {
+            if (TutorialManager.Instance != null && !TutorialManager.Instance.CanStartBattle())
+                return;
+
             if (GameStageController.Instance != null)
                 GameStageController.Instance.RequestNextWave();
             return;
@@ -142,6 +196,12 @@ public class PhaseHeaderHUD : MonoBehaviour
 
         if (CurrentStage == StageType.Battle)
         {
+            if (!CanEndTurnInBattle())
+                return;
+
+            if (TutorialManager.Instance != null && !TutorialManager.Instance.CanEndTurn())
+                return;
+
             EventBus.Instance.Publish(new EndTurnRequestedEvent());
         }
     }
@@ -178,12 +238,17 @@ public class PhaseHeaderHUD : MonoBehaviour
 
         if (phaseEndButton != null)
             phaseEndButton.text = "정비 완료";
+
+        RefreshEndTurnButtonInteractable();
     }
 
     private void RefreshBattleHeader()
     {
         int dayNumber = GetDisplayWaveNumber();
-        int roundNumber = Mathf.Max(1, GameProgress.Instance.CurrentRound);
+        GameProgress progress = GameProgress.Instance;
+        int roundNumber = progress != null
+            ? Mathf.Max(1, progress.CurrentRound)
+            : 1;
 
         if (dayLabel != null)
             dayLabel.text = $"{dayNumber}일차";
@@ -205,6 +270,34 @@ public class PhaseHeaderHUD : MonoBehaviour
 
         if (phaseEndButton != null)
             phaseEndButton.text = "턴 종료";
+
+        RefreshEndTurnButtonInteractable();
+    }
+
+    private bool CanEndTurnInBattle()
+    {
+        if (CurrentStage != StageType.Battle)
+            return true;
+
+        bool canEndTurn = currentTurn == TurnType.Player && activeUndeadMoveCount <= 0;
+        if (!canEndTurn)
+            return false;
+
+        return TutorialManager.Instance == null || TutorialManager.Instance.CanEndTurn();
+    }
+
+    private void RefreshEndTurnButtonInteractable()
+    {
+        if (phaseEndButton == null)
+            return;
+
+        if (CurrentStage == StageType.Preparation)
+        {
+            phaseEndButton.SetEnabled(TutorialManager.Instance == null || TutorialManager.Instance.CanStartBattle());
+            return;
+        }
+
+        phaseEndButton.SetEnabled(CanEndTurnInBattle());
     }
 
     private void RefreshResourceTexts()

@@ -1,13 +1,18 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
-// 준비 단계에서 적이 등장할 스폰 구역을 그리드에 표시한다
-// 플레이어가 다음 웨이브에서 적이 어느 방향에서 오는지 파악할 수 있도록 한다
+// Shows only the enemy spawn zone regions used by the upcoming wave.
 public class EnemyDirectionIndicator : MonoBehaviour
 {
     private void OnEnable()
     {
         EventBus.Instance.Subscribe<StageChangedEvent>(OnStageChanged);
+
+        if (GameStageController.Instance != null
+            && GameStageController.Instance.CurrentStage == StageType.Preparation)
+        {
+            ShowUpcomingWaveSpawnZones();
+        }
     }
 
     private void OnDisable()
@@ -20,14 +25,89 @@ public class EnemyDirectionIndicator : MonoBehaviour
     {
         if (e.CurrentStage == StageType.Preparation)
         {
-            List<Vector2Int> positions = GridManager.Instance.MapDefinition
-                .GetSpawnZonePositions(SpawnZoneType.EnemySpawn);
-
-            GridHighlighter.Instance.ShowEnemySpawnZones(positions);
+            ShowUpcomingWaveSpawnZones();
         }
         else
         {
             GridHighlighter.Instance.ClearEnemySpawnZones();
+        }
+    }
+
+    private void ShowUpcomingWaveSpawnZones()
+    {
+        GridHighlighter.Instance.ClearEnemySpawnZones();
+
+        if (GridManager.Instance == null || GridManager.Instance.MapDefinition == null)
+            return;
+
+        if (WaveManager.Instance == null || !WaveManager.Instance.TryGetUpcomingWave(out WaveConfig waveConfig))
+            return;
+
+        HashSet<Vector2Int> positions = CollectApproachDirectionSpawnZonePositions(
+            GridManager.Instance.MapDefinition,
+            waveConfig);
+
+        GridHighlighter.Instance.ShowEnemySpawnZones(new List<Vector2Int>(positions));
+    }
+
+    private static HashSet<Vector2Int> CollectApproachDirectionSpawnZonePositions(
+        MapDefinition map,
+        WaveConfig waveConfig)
+    {
+        HashSet<Vector2Int> result = new HashSet<Vector2Int>();
+        if (map == null || waveConfig == null)
+            return result;
+
+        for (int i = 0; i < map.Cells.Count; i++)
+        {
+            MapCellData cell = map.Cells[i];
+            Vector2Int position = cell.position;
+
+            if (cell.spawnZone != SpawnZoneType.EnemySpawn)
+                continue;
+
+            if (!IsInApproachDirection(map, position, waveConfig.approachDirection))
+                continue;
+
+            result.Add(position);
+        }
+
+        return result;
+    }
+
+    private static bool IsInApproachDirection(
+        MapDefinition map,
+        Vector2Int position,
+        EnemyApproachDirection direction)
+    {
+        if (direction == EnemyApproachDirection.All)
+            return true;
+
+        int westDistance = position.x;
+        int eastDistance = map.Width - 1 - position.x;
+        int southDistance = position.y;
+        int northDistance = map.Height - 1 - position.y;
+
+        switch (direction)
+        {
+            case EnemyApproachDirection.North:
+                return northDistance <= southDistance
+                    && northDistance <= westDistance
+                    && northDistance <= eastDistance;
+            case EnemyApproachDirection.South:
+                return southDistance <= northDistance
+                    && southDistance <= westDistance
+                    && southDistance <= eastDistance;
+            case EnemyApproachDirection.East:
+                return eastDistance <= westDistance
+                    && eastDistance <= northDistance
+                    && eastDistance <= southDistance;
+            case EnemyApproachDirection.West:
+                return westDistance <= eastDistance
+                    && westDistance <= northDistance
+                    && westDistance <= southDistance;
+            default:
+                return true;
         }
     }
 }

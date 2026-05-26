@@ -12,11 +12,14 @@ public class WaveData : ScriptableObject
     // 웨이브 클리어 시 지급하는 암흑 에너지 보상
     [SerializeField] private int darkEnergyReward = 3;
 
+    [SerializeField] private EnemyApproachDirection approachDirection = EnemyApproachDirection.All;
+
     // 이 웨이브에서 스폰할 적 목록
     [SerializeField] private List<WaveSpawnEntry> spawnEntries = new List<WaveSpawnEntry>();
 
     public int WaveNumber => waveNumber;
     public int DarkEnergyReward => darkEnergyReward;
+    public EnemyApproachDirection ApproachDirection => approachDirection;
     public IReadOnlyList<WaveSpawnEntry> SpawnEntries => spawnEntries;
 }
 

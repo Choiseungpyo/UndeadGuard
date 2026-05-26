@@ -35,5 +35,6 @@ public class WaveSet : ScriptableObject
 public class WaveConfig
 {
     public int darkEnergyReward = 3;
+    public EnemyApproachDirection approachDirection = EnemyApproachDirection.All;
     public List<WaveSpawnEntry> spawnEntries = new List<WaveSpawnEntry>();
 }

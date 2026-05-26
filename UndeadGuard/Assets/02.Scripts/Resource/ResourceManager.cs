@@ -1,8 +1,5 @@
 using UnityEngine;
 
-// 암흑 에너지와 사령 포인트를 통합 관리한다
-// 암흑 에너지는 적 처치 시 획득하고 부활 및 강화에 사용한다
-// 사령 포인트는 플레이어 턴 시작 시 지급되며 사령 명령 사용 시 소모한다
 public class ResourceManager : Singleton<ResourceManager>
 {
     [SerializeField] private int initialDarkEnergy = 5;
@@ -11,19 +8,19 @@ public class ResourceManager : Singleton<ResourceManager>
 
     private int darkEnergy;
     private int commandPoints;
+    private int totalSpentDarkEnergy;
 
     public int DarkEnergy => darkEnergy;
     public int CommandPoints => commandPoints;
+    public int TotalSpentDarkEnergy => totalSpentDarkEnergy;
 
     private void OnEnable()
     {
-        EventBus.Instance.Subscribe<EnemyDiedEvent>(OnEnemyDied);
         EventBus.Instance.Subscribe<TurnChangedEvent>(OnTurnChanged);
     }
 
     private void OnDisable()
     {
-        EventBus.Instance.Unsubscribe<EnemyDiedEvent>(OnEnemyDied);
         EventBus.Instance.Unsubscribe<TurnChangedEvent>(OnTurnChanged);
     }
 
@@ -31,52 +28,46 @@ public class ResourceManager : Singleton<ResourceManager>
     {
         darkEnergy = initialDarkEnergy;
         commandPoints = commandPointsPerTurn;
+        totalSpentDarkEnergy = 0;
         PublishChange();
     }
 
-    // 적 처치 시 암흑 에너지를 획득한다
-    private void OnEnemyDied(EnemyDiedEvent e)
-    {
-        AddDarkEnergy(e.DarkEnergyReward);
-    }
-
-    // 플레이어 턴 시작 시 사령 포인트를 지급한다
     private void OnTurnChanged(TurnChangedEvent e)
     {
-        if (e.CurrentTurn != TurnType.Player) return;
+        if (e.CurrentTurn != TurnType.Player)
+            return;
 
         commandPoints = Mathf.Min(commandPoints + commandPointsPerTurn, maxCommandPoints);
         PublishChange();
     }
 
-    // 암흑 에너지를 추가한다
     public void AddDarkEnergy(int amount)
     {
         darkEnergy += amount;
         PublishChange();
     }
 
-    // 암흑 에너지를 소모한다. 성공 여부를 반환한다
     public bool TrySpendDarkEnergy(int amount)
     {
-        if (darkEnergy < amount) return false;
+        if (darkEnergy < amount)
+            return false;
 
         darkEnergy -= amount;
+        totalSpentDarkEnergy += Mathf.Max(0, amount);
         PublishChange();
         return true;
     }
 
-    // 사령 포인트를 소모한다. 성공 여부를 반환한다
     public bool TrySpendCommandPoints(int amount)
     {
-        if (commandPoints < amount) return false;
+        if (commandPoints < amount)
+            return false;
 
         commandPoints -= amount;
         PublishChange();
         return true;
     }
 
-    // 웨이브 보상으로 암흑 에너지를 추가한다
     public void AddWaveReward(int amount)
     {
         AddDarkEnergy(amount);

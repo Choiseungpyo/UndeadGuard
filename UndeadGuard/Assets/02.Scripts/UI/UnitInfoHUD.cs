@@ -19,17 +19,20 @@ public class UnitInfoHUD : MonoBehaviour
     private Label unitDefLabel;
     private Label unitRangeLabel;
     private Label unitMoveLabel;
+    private UIDocument uiDocument;
 
     private UnitBase selectedUnit;
 
     private void OnEnable()
     {
-        UIDocument uiDocument = GetComponent<UIDocument>();
+        uiDocument = GetComponent<UIDocument>();
         if (uiDocument == null)
         {
             Debug.LogError("UIDocument component not found.");
             return;
         }
+
+        BattleInputGuard.Instance.RegisterDocument(uiDocument);
 
         VisualElement root = uiDocument.rootVisualElement;
 
@@ -51,6 +54,12 @@ public class UnitInfoHUD : MonoBehaviour
 
     private void OnDisable()
     {
+        if (uiDocument != null)
+        {
+            if (BattleInputGuard.TryGetExisting(out var guard))
+                guard.UnregisterDocument(uiDocument);
+        }
+
         EventBus.Instance.Unsubscribe<UnitSelectedEvent>(OnUnitSelected);
         EventBus.Instance.Unsubscribe<UnitDeselectedEvent>(OnUnitDeselected);
         EventBus.Instance.Unsubscribe<UnitAttackedEvent>(OnUnitAttacked);
@@ -109,7 +118,7 @@ public class UnitInfoHUD : MonoBehaviour
         int fallbackRange = Mathf.Max(0, unit.Stats.AttackRange);
         List<Vector2Int> offsets = AttackPatternResolver.GetRelativeTargetOffsets(
             unit,
-            AttackActionIds.BasicAttack,
+            UnitActionIds.DefaultAction,
             fallbackRange);
 
         if (offsets == null || offsets.Count == 0)

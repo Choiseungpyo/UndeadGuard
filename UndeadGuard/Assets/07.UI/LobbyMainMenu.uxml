@@ -1,0 +1,38 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/07.UI/LobbyMainMenu.uss?fileID=7433441132597879392&amp;guid=5ad5f785ff414ddf976f508ac35b722a&amp;type=3#LobbyMainMenu"/>
+    <ui:VisualElement name="Root" class="lobby-root">
+        <ui:VisualElement name="LobbyBackground" class="lobby-background"/>
+        <ui:VisualElement name="LogoImage" class="logo-image"/>
+        <ui:VisualElement name="LeftMenuPanel" class="left-menu-panel">
+            <ui:Button name="NewGameButton" text="새 게임" class="main-menu-button main-menu-button--primary"/>
+            <ui:Button name="ContinueButton" text="계속 하기" class="main-menu-button"/>
+            <ui:Button name="QuitButton" text="종료" class="main-menu-button"/>
+        </ui:VisualElement>
+        <ui:VisualElement name="OperationInfoPanel" class="operation-info-panel">
+            <ui:Label name="OperationInfoTitle" text="작전 정보" class="operation-info-title"/>
+            <ui:VisualElement class="operation-info-list">
+                <ui:Label name="DayLabel" text="밤 1일차" class="operation-info-row"/>
+                <ui:Label name="WaveLabel" text="현재 웨이브: 1" class="operation-info-row"/>
+                <ui:Label name="CoreHpLabel" text="핵 체력: 100 / 100" class="operation-info-row"/>
+                <ui:Label name="DarkEnergyLabel" text="암흑 에너지: 0" class="operation-info-row"/>
+                <ui:Label name="SelectedLordLabel" text="선택 군주: 사령 군주" class="operation-info-row"/>
+                <ui:Label name="UndeadCountLabel" text="보유 언데드: 0" class="operation-info-row"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:Image name="BottomLayout" source="project://database/Assets/09.Download/UI/Lobby/BottomLayout_1920x1080.png?fileID=2800000&amp;guid=e918d79835b6f8f4eb6b9bcbe575490b&amp;type=3#BottomLayout_1920x1080" scale-mode="StretchToFill" class="bottom-layout" style="height: 200px; width: 1800px; align-items: stretch; align-self: auto; align-content: flex-start; left: 60px; right: auto; position: absolute; top: auto; bottom: 5px;"/>
+        <ui:VisualElement name="BottomRightIconGroup" class="bottom-right-icon-group" style="bottom: 48px; right: 216px;">
+            <ui:Button name="CreditsIconButton" text="C" class="icon-button credits-icon-button"/>
+            <ui:Button name="SettingsIconButton" text="S" class="icon-button settings-icon-button"/>
+        </ui:VisualElement>
+        <ui:VisualElement name="NewGameConfirmOverlay" class="confirm-overlay">
+            <ui:VisualElement name="NewGameConfirmPanel" class="confirm-panel">
+                <ui:Label name="NewGameConfirmTitle" text="기존 진행 데이터가 있습니다." class="confirm-title"/>
+                <ui:Label name="NewGameConfirmMessage" text="새 게임을 시작하면 기존 진행 상황이 초기화됩니다." class="confirm-message"/>
+                <ui:VisualElement class="confirm-button-row">
+                    <ui:Button name="NewGameConfirmOkButton" text="확인" class="confirm-button confirm-ok-button"/>
+                    <ui:Button name="NewGameConfirmCancelButton" text="취소" class="confirm-button"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

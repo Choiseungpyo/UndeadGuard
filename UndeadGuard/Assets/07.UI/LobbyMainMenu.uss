@@ -1,0 +1,226 @@
+.lobby-root {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    flex-grow: 1;
+    overflow: hidden;
+    background-color: rgb(7, 6, 10);
+}
+
+.lobby-background {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-image: url("project://database/Assets/09.Download/UI/Lobby/LobbyBG.png?fileID=2800000&guid=8954c9da901ef6749ab785520fbbb223&type=3#LobbyBG");
+    -unity-background-scale-mode: scale-and-crop;
+    background-position-x: 50%;
+    background-position-y: 50%;
+}
+
+.lobby-vignette {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.12);
+}
+
+.logo-image {
+    position: absolute;
+    left: 54px;
+    top: 24px;
+    width: 560px;
+    height: 250px;
+    background-image: url("project://database/Assets/09.Download/UI/Title/Logo.png?fileID=21300000&guid=8e3a5fed2d4b9ac4685514d77f04bac0&type=3#Logo");
+    -unity-background-scale-mode: scale-to-fit;
+    background-position-x: 50%;
+    background-position-y: 50%;
+}
+
+.left-menu-panel {
+    position: absolute;
+    left: 82px;
+    top: 356px;
+    width: 470px;
+    align-items: center;
+}
+
+.main-menu-button {
+    width: 470px;
+    height: 112px;
+    margin-bottom: 20px;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 6px;
+    color: rgb(230, 219, 190);
+    font-size: 38px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    background-color: rgba(0, 0, 0, 0);
+    background-image: url("project://database/Assets/09.Download/UI/Lobby/Button.png?fileID=21300000&guid=c86cba1659f3a024f882daf180c0fc33&type=3#Button");
+    -unity-background-scale-mode: stretch-to-fill;
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+}
+
+.main-menu-button:hover {
+    color: rgb(255, 244, 211);
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.main-menu-button--primary {
+    background-image: url("project://database/Assets/09.Download/UI/Lobby/ActiveButton.png?fileID=21300000&guid=187aa41456efe234696888fe7896c2a4&type=3#ActiveButton");
+}
+
+.main-menu-button:disabled {
+    opacity: 0.42;
+    color: rgb(126, 119, 105);
+}
+
+.operation-info-panel {
+    position: absolute;
+    right: 98px;
+    top: 318px;
+    width: 430px;
+    min-height: 420px;
+    display: none;
+    padding-left: 38px;
+    padding-right: 38px;
+    padding-top: 34px;
+    padding-bottom: 34px;
+    background-color: rgba(7, 7, 10, 0.72);
+    background-image: url("project://database/Assets/09.Download/UI/Lobby/Description.png?fileID=21300000&guid=6b7a23d155e16644099c54d4689dfe93&type=3#Description");
+    -unity-background-scale-mode: stretch-to-fill;
+}
+
+.operation-info-title {
+    margin-bottom: 26px;
+    color: rgb(226, 211, 172);
+    font-size: 34px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.operation-info-row {
+    margin-bottom: 18px;
+    color: rgb(218, 218, 211);
+    font-size: 24px;
+    -unity-font-style: bold;
+}
+
+.bottom-layout {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 1920px;
+    height: 262px;
+}
+
+.bottom-right-icon-group {
+    position: absolute;
+    right: 78px;
+    bottom: 28px;
+    height: 70px;
+    flex-direction: row;
+    align-items: center;
+}
+
+.icon-button {
+    width: 66px;
+    height: 66px;
+    margin-left: 16px;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 2px;
+    color: rgb(234, 226, 205);
+    font-size: 27px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    background-color: rgba(0, 0, 0, 0);
+    background-image: url("project://database/Assets/09.Download/UI/Lobby/SettingButton.png?fileID=21300000&guid=807ad416e04562945ab418163bbbfbe7&type=3#SettingButton");
+    -unity-background-scale-mode: stretch-to-fill;
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+}
+
+.icon-button:hover {
+    color: rgb(255, 246, 218);
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.confirm-overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.72);
+}
+
+.confirm-panel {
+    width: 650px;
+    min-height: 300px;
+    padding-left: 48px;
+    padding-right: 48px;
+    padding-top: 42px;
+    padding-bottom: 38px;
+    background-color: rgba(10, 9, 13, 0.95);
+    background-image: url("project://database/Assets/09.Download/UI/Lobby/Description.png?fileID=21300000&guid=6b7a23d155e16644099c54d4689dfe93&type=3#Description");
+    -unity-background-scale-mode: stretch-to-fill;
+}
+
+.confirm-title {
+    color: rgb(232, 213, 168);
+    font-size: 32px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.confirm-message {
+    margin-top: 28px;
+    color: rgb(224, 221, 211);
+    font-size: 24px;
+    white-space: normal;
+    -unity-text-align: middle-center;
+}
+
+.confirm-button-row {
+    margin-top: 36px;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.confirm-button {
+    width: 180px;
+    height: 64px;
+    margin-left: 12px;
+    margin-right: 12px;
+    color: rgb(230, 224, 208);
+    font-size: 24px;
+    -unity-font-style: bold;
+    background-color: rgba(0, 0, 0, 0);
+    background-image: url("project://database/Assets/09.Download/UI/Lobby/Button.png?fileID=21300000&guid=c86cba1659f3a024f882daf180c0fc33&type=3#Button");
+    -unity-background-scale-mode: stretch-to-fill;
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+}
+
+.confirm-ok-button {
+    background-image: url("project://database/Assets/09.Download/UI/Lobby/ActiveButton.png?fileID=21300000&guid=187aa41456efe234696888fe7896c2a4&type=3#ActiveButton");
+}

@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public static class AttackActionIds
+public static class UnitActionIds
 {
-    public const string BasicAttack = "BasicAttack";
+    public const string DefaultAction = "DefaultAction";
 }
 
 public enum AttackParticleSpawnMode
@@ -18,7 +18,7 @@ public enum AttackParticleSpawnMode
 [Serializable]
 public class AttackPatternEntry
 {
-    [SerializeField] private string actionId = AttackActionIds.BasicAttack;
+    [SerializeField] private string actionId = UnitActionIds.DefaultAction;
     [SerializeField] private int maxRange = 1;
     [SerializeField] private List<Vector2Int> relativeTargetOffsets = new List<Vector2Int>();
     [SerializeField] private GameObject particlePrefab;
@@ -31,7 +31,7 @@ public class AttackPatternEntry
     public string ActionId
     {
         get => actionId;
-        set => actionId = string.IsNullOrWhiteSpace(value) ? AttackActionIds.BasicAttack : value.Trim();
+        set => actionId = string.IsNullOrWhiteSpace(value) ? UnitActionIds.DefaultAction : value.Trim();
     }
 
     public int MaxRange
@@ -172,7 +172,7 @@ public class AttackPatternDatabase : ScriptableObject
     private static string NormalizeActionId(string actionId)
     {
         return string.IsNullOrWhiteSpace(actionId)
-            ? AttackActionIds.BasicAttack
+            ? UnitActionIds.DefaultAction
             : actionId.Trim();
     }
 }

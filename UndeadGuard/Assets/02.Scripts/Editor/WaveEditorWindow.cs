@@ -149,6 +149,16 @@ public sealed class WaveEditorWindow : EditorWindow
             wave.darkEnergyReward = Mathf.Max(0, newReward);
         }
 
+        EnemyApproachDirection newDirection = (EnemyApproachDirection)EditorGUILayout.EnumPopup(
+            "Enemy Approach Direction",
+            wave.approachDirection);
+
+        if (newDirection != wave.approachDirection)
+        {
+            Undo.RecordObject(waveSet, "Change Approach Direction");
+            wave.approachDirection = newDirection;
+        }
+
         EditorGUILayout.EndVertical();
         EditorGUILayout.Space(4f);
 

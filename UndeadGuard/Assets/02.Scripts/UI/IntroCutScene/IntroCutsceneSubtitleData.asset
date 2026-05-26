@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 219dfd7c7e174c941ba0df79701c298b, type: 3}
+  m_Name: IntroCutsceneSubtitleData
+  m_EditorClassIdentifier: Assembly-CSharp::CutsceneSubtitleData
+  entries:
+  - startTime: 0.5
+    duration: 4
+    text: "\uC8FD\uC74C\uC774 \uC7A0\uB4E4\uC5B4\uC57C \uD560 \uB545\uC5D0\uC11C,
+      \uB9DD\uC790\uB4E4\uC774 \uB2E4\uC2DC \uAE68\uC5B4\uB0AC\uB2E4."
+  - startTime: 7
+    duration: 4.5
+    text: "\uADF8\uB4E4\uC740 \uC774\uB984\uB3C4, \uAE30\uC5B5\uB3C4 \uC783\uC740
+      \uCC44 \uD558\uB098\uC758 \uBE5B\uC744 \uD5A5\uD574 \uBAB0\uB824\uB4E4\uC5C8\uB2E4."
+  - startTime: 14
+    duration: 2
+    text: "\uADF8 \uBE5B\uC740 \uC8FD\uC740 \uC790\uC758 \uC9C8\uC11C\uB97C \uBD99\uC7A1\uACE0
+      \uC788\uB294 \uB9C8\uC9C0\uB9C9 \uC0AC\uB839\uD575\uC774\uC5C8\uB2E4."
+  - startTime: 16
+    duration: 3
+    text: "\uD575\uC774 \uBB34\uB108\uC9C0\uBA74, \uC8FD\uC74C\uC758 \uACBD\uACC4\uB294
+      \uC644\uC804\uD788 \uBB34\uB108\uC9C4\uB2E4."
+  - startTime: 20
+    duration: 4
+    text: "\uADF8\uB54C, \uC624\uB79C \uCE68\uBB35 \uC18D\uC5D0 \uC7A0\uB4E4\uC5B4
+      \uC788\uB358 \uC0AC\uB839 \uAD70\uC8FC\uAC00 \uB208\uC744 \uB5B4\uB2E4."
+  - startTime: 26
+    duration: 4
+    text: "\uC774\uC81C \uC8FD\uC740 \uC790\uB4E4\uC740 \uAD70\uC8FC\uC758 \uBA85\uB839
+      \uC544\uB798 \uB2E4\uC2DC \uC804\uC7A5\uC5D0 \uC120\uB2E4."

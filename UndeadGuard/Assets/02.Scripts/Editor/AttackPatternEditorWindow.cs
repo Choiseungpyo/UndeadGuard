@@ -208,7 +208,7 @@ public sealed class AttackPatternEditorWindow : EditorWindow
         if (isEnemyProfile)
         {
             selectedPatternIndex = 0;
-            EditorGUILayout.LabelField("Action", AttackActionIds.BasicAttack);
+            EditorGUILayout.LabelField("Action", UnitActionIds.DefaultAction);
         }
         else
         {
@@ -219,7 +219,7 @@ public sealed class AttackPatternEditorWindow : EditorWindow
             if (GUILayout.Button("Add Action", GUILayout.Width(120f)))
             {
                 RecordDatabaseUndo("Add Action Pattern");
-                patterns.Add(new AttackPatternEntry { ActionId = GetUniqueActionId(patterns, "Skill") });
+                patterns.Add(new AttackPatternEntry { ActionId = GetUniqueActionId(patterns, "Action") });
                 selectedPatternIndex = patterns.Count - 1;
                 MarkDatabaseDirty();
             }
@@ -245,7 +245,7 @@ public sealed class AttackPatternEditorWindow : EditorWindow
         }
 
         if (isEnemyProfile)
-            selectedPattern.ActionId = AttackActionIds.BasicAttack;
+            selectedPattern.ActionId = UnitActionIds.DefaultAction;
         else
         {
             string newActionId = EditorGUILayout.TextField("Action Id", selectedPattern.ActionId);
@@ -512,7 +512,7 @@ public sealed class AttackPatternEditorWindow : EditorWindow
             if (patterns[0] == null)
                 patterns[0] = CreateDefaultPattern(profile.Team);
 
-            patterns[0].ActionId = AttackActionIds.BasicAttack;
+            patterns[0].ActionId = UnitActionIds.DefaultAction;
         }
 
         selectedPatternIndex = Mathf.Clamp(selectedPatternIndex, 0, Mathf.Max(0, patterns.Count - 1));
@@ -522,14 +522,14 @@ public sealed class AttackPatternEditorWindow : EditorWindow
     {
         return new AttackPatternEntry
         {
-            ActionId = AttackActionIds.BasicAttack,
+            ActionId = UnitActionIds.DefaultAction,
             MaxRange = 1
         };
     }
 
     private string GetUniqueActionId(List<AttackPatternEntry> patterns, string baseName)
     {
-        string root = string.IsNullOrWhiteSpace(baseName) ? "Skill" : baseName;
+        string root = string.IsNullOrWhiteSpace(baseName) ? "Action" : baseName;
         string candidate = root;
         int suffix = 1;
 
